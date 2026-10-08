@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title data-i18n="app.title">Techno Afandi — أداة FC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles/fonts.css">
+<link rel="stylesheet" href="styles/version_page.css">
+</head>
+<body>
+
+<div class="desktop-bg"></div>
+<div class="particles" id="particles"></div>
+
+<div class="titlebar">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <span class="app-name" data-i18n="app.titlebar">Techno Afandi Launcher — FC 27</span>
+</div>
+<button class="global-lang-toggle" type="button" data-action="toggleLanguage" data-i18n-aria="language.toggle.aria" aria-label="التبديل إلى الإنجليزية"><i class="ti ti-language"></i><span data-i18n="language.toggle">English</span></button>
+
+<div class="app-wrap">
+<div class="app-panel" data-tauri-drag-region>
+  <div class="glow-edge"></div>
+  <div class="circuits" aria-hidden="true">
+    <svg viewBox="0 0 420 640" preserveAspectRatio="none">
+      <g stroke-width="1" fill="none" opacity="0.5">
+        <path d="M0 70 H36 L50 84 H110" stroke="#7CFFE1"/><circle cx="110" cy="84" r="3" fill="#7CFFE1" stroke="none"/>
+        <path d="M420 120 H382 L368 134 H305" stroke="#A855F7"/><circle cx="305" cy="134" r="3" fill="#A855F7" stroke="none"/>
+        <path d="M0 560 H46 L60 574 H130" stroke="#A855F7"/><circle cx="130" cy="574" r="3" fill="#A855F7" stroke="none"/>
+        <path d="M420 600 H378 L364 614 H290" stroke="#7CFFE1"/><circle cx="290" cy="614" r="3" fill="#7CFFE1" stroke="none"/>
+      </g>
+    </svg>
+  </div>
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+  <div class="page-badge" style="left: 14px !important; right: auto !important; position: absolute !important; top: 14px !important;"><i class="ti ti-tag"></i><span data-i18n="version.badge">الإصدار</span></div>
+  <button class="back-btn" id="btn-back" data-action="goBack" style="width:fit-content !important; min-width:fit-content !important; right:14px !important; left:auto !important; position:absolute !important; top:14px !important;"><i class="ti ti-arrow-right"></i><span data-i18n="common.back">رجوع</span></button>
+
+  <div class="logo-zone">
+    <div class="rays"></div>
+    <div class="ring r2"></div><div class="ring r1"></div>
+    <div class="orbit o2"></div><div class="orbit o1"></div>
+    <div class="logo-glow-ring wide"></div><div class="logo-glow-ring"></div>
+    <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi" data-logo-fallback="true">
+  </div>
+
+  <div class="status-line" id="status-row"><span class="ping"></span><span id="status-text" role="status" aria-live="polite">جاهز للتفعيل</span></div>
+  <div class="name" data-i18n="brand">تكنو أفندي</div>
+
+  <div class="mode-chip" id="mode-chip"><i class="ti ti-adjustments-alt"></i><span class="lbl" data-i18n="version.mode">طريقة التفعيل:</span><span id="mode-value">FMM</span></div>
+
+  <div class="divider"></div>
+
+  <div class="version-card">
+    <div class="version-label" data-i18n="version.current">إصدار اللعبة الحالي</div>
+    <div class="version-main" aria-live="polite"><span class="v-prefix">V</span><span id="vmain">جارٍ التحميل...</span><span class="v-sep">|</span><span class="v-semver" id="vsem">...</span></div>
+  </div>
+
+  <button class="btn-start" id="start-btn" data-action="startActivation"><i class="ti ti-bolt"></i><span data-i18n="version.start">ابدأ التفعيل</span></button>
+  <div class="action-row" style="margin-top:9px">
+    <button class="btn-pause" id="pause-btn" data-action="togglePause"><i class="ti ti-player-pause"></i><span id="pause-label" data-i18n="version.pause">إيقاف مؤقت</span></button>
+    <button class="btn-cancel" id="cancel-btn" data-action="cancelActivation"><i class="ti ti-x"></i><span data-i18n="version.cancel">إلغاء</span></button>
+  </div>
+
+  <div class="progress-console" id="progress-container">
+    <div class="pc-scan"></div>
+    <div class="pc-head">
+      <div class="pc-text"><i class="ti ti-loader-2"></i><span id="progress-text-content">جارٍ التهيئة</span></div>
+      <div class="pc-pct" id="progress-pct">0%</div>
+    </div>
+    <div class="pc-bar" id="activation-progressbar" role="progressbar" data-i18n-aria="version.taskProgress" aria-label="تقدم المهمة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="جارٍ التهيئة 0%"><div class="pc-fill" id="progress-fill"></div></div>
+    <span class="sr-only" id="progress-announcer" aria-live="polite" aria-atomic="true"></span>
+  </div>
+
+  <div class="credit"><span data-i18n-html="credit">Powered by <strong>D A W L Y</strong></span></div>
+
+  <!-- Social Links from Home Page -->
+  <div class="links" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:auto !important;direction:ltr;">
+    <a class="link-btn" href="https://youtube.com/@technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--red-1)"><svg width="26" height="26" viewBox="0 0 24 24" fill="#FF0000" stroke="none"><path d="M22.54 6.42a2.78 2.78 0 0 0 -1.94 -2c-1.71 -.46 -8.6 -.46 -8.6 -.46s-6.89 0 -8.6 .46a2.78 2.78 0 0 0 -1.94 2c-.46 1.71 -.46 5.29 -.46 5.29s0 3.58 .46 5.29a2.78 2.78 0 0 0 1.94 2c1.71 .46 8.6 .46 8.6 .46s6.89 0 8.6 -.46a2.78 2.78 0 0 0 1.94 -2c.46 -1.71 .46 -5.29 .46 -5.29s0 -3.58 -.46 -5.29zM9.75 15.02v-6.5l5.75 3.25z"/></svg><span data-i18n="link.youtube">YouTube</span></a>
+    <a class="link-btn" href="https://social.technoafandi.com/" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--teal-2)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"/></svg><span data-i18n="link.community">تواصل</span></a>
+    <a class="link-btn" href="https://go.technoafandi.com/ea-sports-fc-26" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--gold-2)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55z"/><path d="M12 7v-4"/><path d="M16.76 10.45l3.24 -2.45"/><path d="M15 16l2.5 3.5"/><path d="M9 16l-2.5 3.5"/><path d="M7.24 10.45l-3.24 -2.45"/></svg><span data-i18n="link.fc">FC 27</span></a>
+    <a class="link-btn" href="https://discord.gg/technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--purple-1)"><svg width="26" height="26" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c0,0,.04-.06.05-.09h0c2.69-28.91-4.88-52.56-19-72.06Zm-68.6,59.72c-5.28,0-9.61-4.9-9.61-10.9s4.21-10.9,9.61-10.9,9.65,4.9,9.61,10.9-4.21,10.9-9.61,10.9Zm49,0c-5.28,0-9.61-4.9-9.61-10.9s4.21-10.9,9.61-10.9,9.65,4.9,9.61,10.9-4.32,10.9-9.61,10.9Z"/></svg><span data-i18n="link.discord">ديسكورد</span></a>
+  </div>
+
+      
+</div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" id="cancel-modal">
+  <div class="modal-wrap">
+    <div class="modal">
+      <div class="glow-edge"></div>
+
+      <div class="circuits" aria-hidden="true">
+        <svg viewBox="0 0 440 560" preserveAspectRatio="none">
+          <g stroke="#FFC857" stroke-width="1" fill="none" opacity="0.35">
+            <path d="M0 90 H40 L55 105 H120" />
+            <circle cx="120" cy="105" r="3" fill="#FFC857" stroke="none"/>
+            <path d="M440 140 H400 L385 155 H320" />
+            <circle cx="320" cy="155" r="3" fill="#FFC857" stroke="none"/>
+            <path d="M0 460 H50 L65 475 H140" />
+            <circle cx="140" cy="475" r="3" fill="#FFC857" stroke="none"/>
+            <path d="M440 430 H395 L380 445 H300" />
+            <circle cx="300" cy="445" r="3" fill="#FFC857" stroke="none"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+
+      <div class="logo-zone">
+        <div class="ring r2"></div>
+        <div class="ring r1"></div>
+        <div class="orbit"></div>
+        <div class="pulse p1"></div>
+        <div class="pulse p2"></div>
+        <div class="streak s1"></div>
+        <div class="streak s2"></div>
+        <div class="logo-glow-ring wide"></div>
+        <div class="logo-glow-ring"></div>
+        <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Logo" data-logo-fallback="true">
+        <div class="confirm-badge"><span>?</span></div>
+      </div>
+
+      <div class="status-line">
+        <span class="ping"></span>
+        <span data-i18n="cancel.status">تأكيد الإلغاء</span>
+      </div>
+
+      <h1 class="title" data-i18n="cancel.title">هل تريد إيقاف التفعيل؟</h1>
+
+      <p class="message">
+        <span data-i18n="cancel.message">يمكنك استكمال التفعيل، أو الاحتفاظ بالملفات الحالية، أو حذفها.</span>
+      </p>
+
+      <div class="progress-card">
+        <div class="prow">
+          <div class="pname">
+            <svg class="pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="5" width="4" height="14" rx="1" fill="#F5B942"/>
+              <rect x="14" y="5" width="4" height="14" rx="1" fill="#F5B942"/>
+            </svg>
+            <span data-i18n="cancel.version">FC 27 — الإصدار</span> <span id="cancel-vmain">غير معروف</span>
+          </div>
+          <div class="pstat" data-i18n="cancel.paused">متوقف مؤقتًا</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="cancel-progress-fill"></div></div>
+        <div class="progress-meta">
+          <span id="cancel-progress-meta">0.0 MB</span>
+          <span id="cancel-progress-pct">0%</span>
+        </div>
+      </div>
+
+      <div class="choices" role="radiogroup" aria-label="اختيار طريقة الإلغاء">
+        <div class="choice-option selected" role="radio" aria-checked="true" tabindex="0" data-action="selectCancelChoice" data-choice="resume">
+          <div class="icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+          <div class="info">
+            <div class="name" data-i18n="cancel.resume.title">استكمال التفعيل</div>
+            <div class="desc" data-i18n="cancel.resume.desc">تابع من حيث توقفت</div>
+          </div>
+          <div class="radio"></div>
+        </div>
+
+        <div class="choice-option" role="radio" aria-checked="false" tabindex="-1" data-action="selectCancelChoice" data-choice="keep">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 19.5V6.5C4 5.67 4.67 5 5.5 5H10L12 7.5H18.5C19.33 7.5 20 8.17 20 9V19.5" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M8.5 15L11 17.5L16 12.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="info">
+            <div class="name" data-i18n="cancel.keep.title">الاحتفاظ بالملفات</div>
+            <div class="desc" data-i18n="cancel.keep.desc">احتفظ بالبيانات الحالية لاستكمالها لاحقًا</div>
+          </div>
+          <div class="radio"></div>
+        </div>
+
+        <div class="choice-option" role="radio" aria-checked="false" tabindex="-1" data-action="selectCancelChoice" data-choice="delete">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 7.5H19M9.5 7.5V5.5C9.5 5 9.9 4.5 10.5 4.5H13.5C14.1 4.5 14.5 5 14.5 5.5V7.5M17.5 7.5L16.8 18.5C16.75 19.3 16.1 19.9 15.3 19.9H8.7C7.9 19.9 7.25 19.3 7.2 18.5L6.5 7.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="info">
+            <div class="name" data-i18n="cancel.delete.title">حذف الملفات</div>
+            <div class="desc" data-i18n="cancel.delete.desc">احذف البيانات الحالية لتوفير مساحة</div>
+          </div>
+          <div class="radio"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="actions">
+        <button class="btn-cancel" data-action="submitCancelChoice" data-i18n="cancel.confirm">تأكيد الاختيار</button>
+      </div>
+      <div class="cancel-waiting" id="cancel-waiting" data-i18n="cancel.waiting" hidden>جارٍ إيقاف التفعيل بأمان...</div>
+
+      <div class="footnote" data-i18n="cancel.footnote">تقدر تبدأ التفعيل من جديد في أي وقت.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal-wrap">
+    <div class="modal res-success" id="result-modal-box">
+      <div class="glow-edge"></div>
+
+      <div class="circuits" aria-hidden="true">
+        <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+          <g stroke="#55F5D5" stroke-width="1" fill="none" opacity="0.5">
+            <path d="M0 90 H40 L55 105 H120" />
+            <circle cx="120" cy="105" r="3" fill="#55F5D5" stroke="none"/>
+            <path d="M440 140 H400 L385 155 H320" />
+            <circle cx="320" cy="155" r="3" fill="#55F5D5" stroke="none"/>
+            <path d="M0 430 H50 L65 445 H140" />
+            <circle cx="140" cy="445" r="3" fill="#55F5D5" stroke="none"/>
+            <path d="M440 400 H395 L380 415 H300" />
+            <circle cx="300" cy="415" r="3" fill="#55F5D5" stroke="none"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+
+      <div class="logo-zone">
+        <div class="rays"></div>
+        <div class="ring r2"></div>
+        <div class="ring r1"></div>
+        <div class="logo-glow-ring wide"></div>
+        <div class="logo-glow-ring"></div>
+        <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi" data-logo-fallback="true">
+        <div class="success-badge"><i class="ti ti-check" id="result-badge-icon" style="font-size: 15px;"></i></div>
+      </div>
+
+      <div class="status-line">
+        <span class="ping"></span>
+        <span id="result-status-text">حالة التفعيل</span>
+      </div>
+
+      <h1 class="title" id="result-title">تم التفعيل بنجاح</h1>
+
+      <p class="message" id="result-message">
+        تم تفعيل EA SPORTS FC 27 بنجاح. استمتع باللعبة!
+      </p>
+
+      <div class="license-line" data-i18n="result.license">حالة الترخيص: تم التحقق · أداة TechnoAfandi FC</div>
+
+      <div class="divider"></div>
+
+      <div class="actions">
+        <button class="btn-success" id="result-btn" data-action="closeResultModal">
+          <i class="ti ti-arrow-right" id="result-btn-icon" style="font-size: 15px;"></i>
+          <span data-i18n="result.home">العودة للرئيسية</span>
+        </button>
+        <button class="btn-close" data-action="exitApp" data-i18n="result.close">إغلاق الأداة</button>
+      </div>
+
+      <div class="footnote"><span data-i18n="result.thanks">شكرًا لاختيارك تكنو أفندي</span></div>
+    </div>
+    </div>
+</div>
+
+<script type="module" src="scripts/version.js"></script>
+<script type="module" src="scripts/tour.js"></script>
+<script type="module" src="scripts/modal_fit.js"></script>
+</body>
+</html>

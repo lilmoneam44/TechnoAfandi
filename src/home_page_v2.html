@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title data-i18n="app.title">Techno Afandi — أداة FC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles/fonts.css">
+<link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/update_popup.css">
+</head>
+<body>
+<div class="desktop-bg"></div>
+<div class="particles" id="particles"></div>
+
+<div class="titlebar">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <span class="app-name" data-i18n="app.titlebar">Techno Afandi Launcher — FC 27</span>
+</div>
+<button class="global-lang-toggle" type="button" data-action="toggleLanguage" data-i18n-aria="language.toggle.aria" aria-label="التبديل إلى الإنجليزية"><i class="ti ti-language"></i><span data-i18n="language.toggle">English</span></button>
+
+<div class="app-wrap">
+<div class="app-panel" data-tauri-drag-region>
+  <div class="glow-edge"></div>
+  <div class="circuits" aria-hidden="true">
+    <svg viewBox="0 0 420 640" preserveAspectRatio="none">
+      <g stroke-width="1" fill="none" opacity="0.5">
+        <path d="M0 70 H36 L50 84 H110" stroke="#7CFFE1"/><circle cx="110" cy="84" r="3" fill="#7CFFE1" stroke="none"/>
+        <path d="M420 120 H382 L368 134 H305" stroke="#A855F7"/><circle cx="305" cy="134" r="3" fill="#A855F7" stroke="none"/>
+        <path d="M0 560 H46 L60 574 H130" stroke="#A855F7"/><circle cx="130" cy="574" r="3" fill="#A855F7" stroke="none"/>
+        <path d="M420 600 H378 L364 614 H290" stroke="#7CFFE1"/><circle cx="290" cy="614" r="3" fill="#7CFFE1" stroke="none"/>
+      </g>
+    </svg>
+  </div>
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+  <div class="page-badge" id="version-badge" style="left: auto; right: 14px;"><i class="ti ti-info-circle"></i> v1.2.5</div>
+  <div class="page-badge"><i class="ti ti-home-2"></i><span data-i18n="home.badge">الرئيسية</span></div>
+  <div class="logo-zone">
+    <div class="rays"></div>
+    <div class="ring r2"></div><div class="ring r1"></div>
+    <div class="orbit o2"></div><div class="orbit o1"></div>
+    <div class="logo-glow-ring wide"></div><div class="logo-glow-ring"></div>
+    <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi" data-logo-fallback="true">
+    <div class="logo-badge"><i class="ti ti-device-gamepad-2"></i></div>
+  </div>
+
+  <div class="status-line"><span class="ping"></span><span data-i18n="home.ready">جاهز للاستخدام</span></div>
+  <div class="name" data-i18n="brand">تكنو أفندي</div>
+
+  <div class="divider"></div>
+
+  <div class="modes" role="radiogroup" aria-label="طريقة التفعيل" data-i18n-aria="home.mode.label">
+    <div class="mode-option" id="opt-fmm" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="FMM">
+      <div class="icon-wrap"><i class="ti ti-tool"></i></div>
+      <div class="info">
+        <div class="m-name" data-i18n="home.mode.fmm.title">FMM — لـ FC 26</div>
+        <div class="m-desc" data-i18n="home.mode.fmm.desc">تفعيل التعديلات عبر FIFA Mod Manager</div>
+      </div>
+      <div class="radio"></div>
+    </div>
+    <div class="mode-option" id="opt-live" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="Live Editor">
+      <div class="icon-wrap"><i class="ti ti-bolt"></i></div>
+      <div class="info">
+        <div class="m-name" data-i18n="home.mode.live.title">Live Editor</div>
+        <div class="m-desc" data-i18n="home.mode.live.desc">تفعيل مباشر عبر Live Editor</div>
+      </div>
+      <div class="radio"></div>
+    </div>
+  </div>
+
+  <button class="btn-start" data-action="continueToVersion"><i class="ti ti-arrow-left"></i><span data-i18n="home.review">مراجعة إصدار اللعبة</span></button>
+
+  <div class="info-block">
+    <div class="info-row">
+      <i class="ti ti-server-2"></i>
+      <div>
+        <p class="info-ar" data-i18n="home.community">انضم إلى مجتمع تكنو أفندي للألعاب والتقنية.</p>
+      </div>
+    </div>
+    <div class="info-row">
+      <i class="ti ti-versions"></i>
+      <div>
+        <p class="info-ar" data-i18n="home.next">اختر طريقة التفعيل، ثم راجع إصدار اللعبة.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="credit"><span data-i18n-html="credit">Powered by <strong>D A W L Y</strong></span></div>
+
+  <div class="links">
+    <a class="link-btn" href="https://youtube.com/@technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--red-1)"><svg width="26" height="26" viewBox="0 0 24 24" fill="#FF0000" stroke="none"><path d="M22.54 6.42a2.78 2.78 0 0 0 -1.94 -2c-1.71 -.46 -8.6 -.46 -8.6 -.46s-6.89 0 -8.6 .46a2.78 2.78 0 0 0 -1.94 2c-.46 1.71 -.46 5.29 -.46 5.29s0 3.58 .46 5.29a2.78 2.78 0 0 0 1.94 2c1.71 .46 8.6 .46 8.6 .46s6.89 0 8.6 -.46a2.78 2.78 0 0 0 1.94 -2c.46 -1.71 .46 -5.29 .46 -5.29s0 -3.58 -.46 -5.29zM9.75 15.02v-6.5l5.75 3.25z"/></svg><span data-i18n="link.youtube">YouTube</span></a>
+    <a class="link-btn" href="https://social.technoafandi.com/" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--teal-2)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"/></svg><span data-i18n="link.community">تواصل</span></a>
+    <a class="link-btn" href="https://go.technoafandi.com/ea-sports-fc-26" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--gold-2)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55z"/><path d="M12 7v-4"/><path d="M16.76 10.45l3.24 -2.45"/><path d="M15 16l2.5 3.5"/><path d="M9 16l-2.5 3.5"/><path d="M7.24 10.45l-3.24 -2.45"/></svg><span data-i18n="link.fc">FC 27</span></a>
+    <a class="link-btn" href="https://discord.gg/technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" style="color:var(--purple-1)"><svg width="26" height="26" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c0,0,.04-.06.05-.09h0c2.69-28.91-4.88-52.56-19-72.06Zm-68.6,59.72c-5.28,0-9.61-4.9-9.61-10.9s4.21-10.9,9.61-10.9,9.65,4.9,9.61,10.9-4.21,10.9-9.61,10.9Zm49,0c-5.28,0-9.61-4.9-9.61-10.9s4.21-10.9,9.61-10.9,9.65,4.9,9.61,10.9-4.32,10.9-9.61,10.9Z"/></svg><span data-i18n="link.discord">ديسكورد</span></a>
+  </div>
+</div>
+</div>
+
+<!-- Startup / Welcome Modal -->
+<div class="modal-overlay" id="startup-modal">
+  <div class="w-modal-wrap">
+  <div class="w-modal">
+    <div class="glow-edge"></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 452 560" preserveAspectRatio="none">
+        <g stroke-width="1" fill="none" opacity="0.45">
+          <path d="M0 100 H40 L55 115 H120" stroke="#5EEAD4"/>
+          <circle cx="120" cy="115" r="3" fill="#5EEAD4" stroke="none"/>
+          <path d="M452 150 H410 L395 165 H330" stroke="#8B5CF6"/>
+          <circle cx="330" cy="165" r="3" fill="#8B5CF6" stroke="none"/>
+          <path d="M0 460 H50 L65 475 H140" stroke="#8B5CF6"/>
+          <circle cx="140" cy="475" r="3" fill="#8B5CF6" stroke="none"/>
+          <path d="M452 430 H405 L390 445 H310" stroke="#5EEAD4"/>
+          <circle cx="310" cy="445" r="3" fill="#5EEAD4" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="logo-zone">
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="arc a2"></div>
+      <div class="arc a1"></div>
+      <div class="pulse p1"></div>
+      <div class="pulse p2"></div>
+      <div class="logo-glow-ring wide"></div>
+      <div class="logo-glow-ring"></div>
+      <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi FC 27 logo" data-logo-fallback="true">
+    </div>
+
+    <div class="status-line" data-i18n="welcome.status">مرحبًا</div>
+
+    <h1 class="title" data-i18n-html="welcome.title" style="text-align: center; line-height: 1.4">أهلًا بيك في<br>TechnoAfandi FC</h1>
+
+    <p class="message">
+      <span data-i18n="welcome.message">أداة تكنو أفندي لتفعيل FC 27. اختار طريقة التفعيل واتبع الخطوات عشان تبدأ.</span>
+    </p>
+
+    <div class="w-divider"></div>
+
+    <div class="w-actions" style="margin-top: 25px;">
+        <button class="btn-teal" style="width: 100%; margin-bottom: 12px; justify-content: center; background: #0D9488; color: #000; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;" data-action="closeStartupModal">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span data-i18n="welcome.start">ابدأ</span>
+          </span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="btn-secondary" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 6px; cursor: pointer;" data-action="startTourFromWelcome">
+          <span data-i18n="welcome.tour">جولة سريعة</span>
+        </button>
+      </div>
+
+
+
+    <div class="version-tag" style="margin-bottom: 15px;"><span data-i18n="welcome.version">أداة تفعيل Techno Afandi FC · الإصدار</span> <span id="welcome-version-badge">1.2.5</span></div>
+  </div>
+</div>
+</div>
+
+
+<!-- Mode Warning Modal -->
+<div class="modal-overlay" id="mode-warning-modal">
+<div class="modal-wrap" dir="rtl">
+  <div class="modal">
+    <div class="glow-edge"></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+        <g stroke="#FFD54A" stroke-width="1" fill="none" opacity="0.45">
+          <path d="M0 90 H40 L55 105 H120" />
+          <circle cx="120" cy="105" r="3" fill="#FFD54A" stroke="none"/>
+          <path d="M440 140 H400 L385 155 H320" />
+          <circle cx="320" cy="155" r="3" fill="#FFD54A" stroke="none"/>
+          <path d="M0 430 H50 L65 445 H140" />
+          <circle cx="140" cy="445" r="3" fill="#FFD54A" stroke="none"/>
+          <path d="M440 400 H395 L380 415 H300" />
+          <circle cx="300" cy="415" r="3" fill="#FFD54A" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="logo-zone">
+      <div class="rays"></div>
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="pulse p1"></div>
+      <div class="pulse p2"></div>
+      <div class="pulse p3"></div>
+      <div class="logo-glow-ring wide"></div>
+      <div class="logo-glow-ring"></div>
+      <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi FC 27 logo" data-logo-fallback="true">
+      <div class="action-badge">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 3L7 15.5M7 3L4 6M7 3L10 6" stroke="#241a05" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-20 7 9)"/>
+          <path d="M9.5 10L18 13.5C19 13.9 19 15.3 18 15.6L14.5 16.7L13 20C12.6 21 11.2 21 10.9 20L9.5 10Z" fill="#241a05" stroke="#241a05" stroke-width="0.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="status-line">
+      <span class="ping"></span>
+      <span data-i18n="mode.status">اختيار طريقة التفعيل</span>
+    </div>
+
+    <h1 class="title" data-i18n="mode.title">اختار طريقة التفعيل</h1>
+
+    <p class="message">
+      <span data-i18n="mode.message">حدّد طريقة التفعيل المناسبة عشان تراجع إصدار اللعبة وتكمل.</span>
+    </p>
+
+    <div class="modes" role="radiogroup" aria-label="طريقة التفعيل" data-i18n-aria="home.mode.label">
+      <div class="mode-option" id="modal-opt-fmm" role="radio" aria-checked="false" tabindex="0" data-action="selectModeModal" data-mode="FMM" style="cursor:pointer;">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="8.5" stroke-width="1.6"/>
+            <path d="M3.5 12H20.5M12 3.5C14.2 5.8 15.4 8.8 15.4 12C15.4 15.2 14.2 18.2 12 20.5C9.8 18.2 8.6 15.2 8.6 12C8.6 8.8 9.8 5.8 12 3.5Z" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="name" data-i18n="home.mode.fmm.title">FMM — لـ FC 26</div>
+          <div class="desc" data-i18n="home.mode.fmm.desc">تفعيل التعديلات عبر FIFA Mod Manager</div>
+        </div>
+        <div class="radio"></div>
+      </div>
+
+      <div class="mode-option" id="modal-opt-live" role="radio" aria-checked="false" tabindex="0" data-action="selectModeModal" data-mode="Live Editor" style="cursor:pointer;">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4.5" width="16" height="11" rx="1.6" stroke-width="1.6"/>
+            <path d="M9 19.5H15M12 15.5V19.5" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="name" data-i18n="home.mode.live.title">Live Editor</div>
+          <div class="desc" data-i18n="home.mode.live.desc">تفعيل مباشر عبر Live Editor</div>
+        </div>
+        <div class="radio"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="actions" style="flex-direction: column;">
+      <button class="btn-continue" data-action="submitMode" style="width: 100%;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="#241a05" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span data-i18n="home.review">مراجعة إصدار اللعبة</span>
+      </button>
+      <p id="mode-error" class="error-text" data-i18n="mode.error" style="display:none; color:var(--red-1); font-size:13px; margin-top:8px; text-align:center;">اختار FMM أو Live Editor عشان تكمل.</p>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<div class="modal-overlay" id="error-modal" dir="rtl">
+<div class="modal-wrap">
+  <div class="modal">
+    <div class="glow-edge"></div>
+    <div class="scanlines"><div class="scan"></div><div class="scan s2"></div></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+        <g stroke="#FF4D4D" stroke-width="1" fill="none" opacity="0.5">
+          <path d="M0 90 H40 L55 105 H120" />
+          <circle cx="120" cy="105" r="3" fill="#FF4D4D" stroke="none"/>
+          <path d="M440 140 H400 L385 155 H320" />
+          <circle cx="320" cy="155" r="3" fill="#FF4D4D" stroke="none"/>
+          <path d="M0 430 H50 L65 445 H140" />
+          <circle cx="140" cy="445" r="3" fill="#FF4D4D" stroke="none"/>
+          <path d="M440 400 H395 L380 415 H300" />
+          <circle cx="300" cy="415" r="3" fill="#FF4D4D" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="logo-zone">
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="frag f1"></div>
+      <div class="frag f2"></div>
+      <div class="frag f3"></div>
+      <div class="frag f4"></div>
+      <div class="logo-glow-ring wide"></div>
+      <div class="logo-glow-ring"></div>
+      <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi FC 27 logo" data-logo-fallback="true">
+      <div class="folder-badge">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6.5C3 5.67157 3.67157 5 4.5 5H9.5L11.5 7H19.5C20.3284 7 21 7.67157 21 8.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V6.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8.5 10.5L15.5 15.5M15.5 10.5L8.5 15.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="status-line">
+      <span class="ping"></span>
+      <span data-i18n="error.status">مسار اللعبة</span>
+    </div>
+
+    <h1 class="title" data-i18n="error.title">مجلد اللعبة غير موجود</h1>
+
+    <p class="message">
+      <span data-i18n="error.message">انقل الأداة إلى مجلد اللعبة نفسه، أو حدّد المجلد يدويًا لو استمرت المشكلة.</span>
+    </p>
+
+    <div class="path-field" style="margin-bottom: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6.5C3 5.67157 3.67157 5 4.5 5H9.5L11.5 7H19.5C20.3284 7 21 7.67157 21 8.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V6.5Z" stroke="#FF4D4D" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="path-text" id="err-path">_echnoAfandi-FC\src-tauri\target\release</span>
+    </div>
+    <div class="path-field" style="margin-bottom: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6.5C3 5.67157 3.67157 5 4.5 5H9.5L11.5 7H19.5C20.3284 7 21 7.67157 21 8.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V6.5Z" stroke="#FF4D4D" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="path-text" style="color: var(--ghost);">__Installer</span>
+      <span class="flag" id="err-installer-flag" data-i18n="error.missing">غير موجود</span>
+    </div>
+    <div class="path-field" style="margin-bottom: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6.5C3 5.67157 3.67157 5 4.5 5H9.5L11.5 7H19.5C20.3284 7 21 7.67157 21 8.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V6.5Z" stroke="#FF4D4D" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="path-text" style="color: var(--ghost);">dbdata.dll</span>
+      <span class="flag" id="err-dbdata-flag" data-i18n="error.missing">غير موجود</span>
+    </div>
+    <div class="path-field" style="margin-bottom: 18px;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6.5C3 5.67157 3.67157 5 4.5 5H9.5L11.5 7H19.5C20.3284 7 21 7.67157 21 8.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V6.5Z" stroke="#FF4D4D" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="path-text" style="color: var(--ghost);">installerdata.xml</span>
+      <span class="flag" id="err-installer-file-flag" data-i18n="error.missing">غير موجود</span>
+    </div>
+
+
+    <div class="divider"></div>
+
+    <div class="actions" style="flex-direction: row; gap: 10px;">
+      <button class="btn-auto" id="btn-auto-locate" data-action="autoLocateGame">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2V6M12 18V22M6 12H2M22 12H18M19.0711 4.92893L16.2426 7.75736M7.75736 16.2426L4.92893 19.0711M19.0711 19.0711L16.2426 16.2426M7.75736 7.75736L4.92893 4.92893" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="btn-auto-text" data-i18n="error.auto">تحديد تلقائي</span>
+      </button>
+      <button class="btn-manual" data-action="selectGameFolder">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 7.5C3 6.67157 3.67157 6 4.5 6H9L11 8H19.5C20.3284 8 21 8.67157 21 9.5V17.5C21 18.3284 20.3284 19 19.5 19H4.5C3.67157 19 3 18.3284 3 17.5V7.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        <span data-i18n="error.manual">اختيار المجلد يدويًا</span>
+      </button>
+    </div>
+    
+    <p id="locate-status" role="status" aria-live="polite" aria-atomic="true" style="display:none; text-align:center; font-size:12px; margin-top:12px; font-family:'JetBrains Mono', monospace;"></p>
+    <div id="scan-progress" role="progressbar" data-i18n-aria="home.locate.progressAria" aria-label="تقدم فحص مجلدات اللعبة" aria-valuetext="0 مجلد تم فحصه" hidden>
+      <div id="scan-progress-fill"></div>
+    </div>
+    <div id="scan-count" aria-live="off" hidden></div>
+    <button id="btn-cancel-scan" type="button" data-action="cancelGameScan" hidden data-i18n="home.locate.cancelSearch">إيقاف البحث</button>
+
+  </div>
+</main>
+</div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal-overlay" id="update-modal">
+<div class="modal-wrap">
+  <div class="modal">
+    <div class="glow-edge"></div>
+    <div class="scanlines"><div class="scan"></div></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+        <g stroke-width="1" fill="none" opacity="0.5">
+          <path d="M0 90 H40 L55 105 H120" stroke="#8B5CF6"/>
+          <circle cx="120" cy="105" r="3" fill="#8B5CF6" stroke="none"/>
+          <path d="M440 140 H400 L385 155 H320" stroke="#5EEAD4"/>
+          <circle cx="320" cy="155" r="3" fill="#5EEAD4" stroke="none"/>
+          <path d="M0 430 H50 L65 445 H140" stroke="#5EEAD4"/>
+          <circle cx="140" cy="445" r="3" fill="#5EEAD4" stroke="none"/>
+          <path d="M440 400 H395 L380 415 H300" stroke="#8B5CF6"/>
+          <circle cx="300" cy="415" r="3" fill="#8B5CF6" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="logo-zone">
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="orbit o2"></div>
+      <div class="orbit o1"></div>
+      <div class="pulse p1"></div>
+      <div class="pulse p2"></div>
+      <div class="logo-glow-ring wide"></div>
+      <div class="logo-glow-ring"></div>
+      <img class="logo-img" data-i18n-alt="app.logo.alt" src="/logo.png" alt="Techno Afandi FC 27 logo" data-logo-fallback="true">
+      <div class="update-badge">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 19V6M12 6L6 12M12 6L18 12" stroke="#0c0f12" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="status-line">
+      <span class="ping"></span>
+      <span data-i18n="update.status">تحديث الأداة</span>
+    </div>
+
+    <h1 class="title" data-i18n="update.title">يتوفر تحديث جديد</h1>
+
+    <p class="message">
+      <span data-i18n="update.message">إصدار جديد من أداة تكنو أفندي جاهز للتثبيت، مع تحسينات وأدوات إضافية.</span>
+    </p>
+
+    <div class="version-chip">
+      <span class="ver">v3.2.1</span>
+      <span class="arrow">→</span>
+      <span class="ver new">v3.3.0</span>
+    </div>
+
+    <ul class="changelog">
+      <li data-i18n="update.change1">تحسين سرعة البحث عن الملفات</li>
+      <li data-i18n="update.change2">تحسين الانتقال بين الخطوات</li>
+      <li data-i18n="update.change3">تحسينات عامة وإصلاحات للأخطاء</li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <div id="update-progress" style="display: none; margin-bottom: 20px; direction: ltr;">
+      <div id="update-status" aria-live="off" style="color: #fff; font-size: 13px; margin-bottom: 8px; text-align: right;">جارٍ التحضير للتحديث...</div>
+      <span class="sr-only" id="update-announcer" role="status" aria-live="polite" aria-atomic="true"></span>
+      <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; width: 100%;">
+        <div id="update-bar-track" role="progressbar" data-i18n-aria="update.progressAria" aria-label="تقدم تنزيل التحديث" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="height:100%;">
+          <div id="update-bar" style="background: #5EEAD4; width: 0%; height: 100%; transition: width 0.3s ease; float: left;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-update" data-action="doUpdate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4V15M12 15L8 11M12 15L16 11" stroke="#0c0f12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 18H19" stroke="#0c0f12" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <span data-i18n="update.now">حدّث الآن</span>
+      </button>
+      <button class="btn-close" data-action="continueToVersionSkippingUpdate"><span data-i18n="update.later">لاحقًا</span></button>
+    </div>
+
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Path Confirm Modal -->
+<div class="modal-overlay" id="path-confirm-modal">
+<div class="modal-wrap" data-i18n-dir>
+  <div class="modal">
+    <div class="glow-edge"></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+        <g stroke="#0D9488" stroke-width="1" fill="none" opacity="0.45">
+          <path d="M0 90 H40 L55 105 H120" />
+          <circle cx="120" cy="105" r="3" fill="#0D9488" stroke="none"/>
+          <path d="M440 140 H400 L385 155 H320" />
+          <circle cx="320" cy="155" r="3" fill="#0D9488" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+
+    <div class="w-header">
+      <h2 style="margin:0; font-size: 20px; font-weight: 700; color: #fff; text-align: center; line-height: 1.4;">
+        <div data-i18n-dir data-i18n="path.confirm.title">هل تريد حفظ هذا المسار؟</div>
+      </h2>
+    </div>
+
+    <div class="w-content" style="text-align: center; line-height: 1.6; color: #a1a1aa; padding: 0 20px;">
+      <div data-i18n-dir data-i18n="path.confirm.message" style="font-size: 14px; margin-bottom: 5px;">تم العثور على مجلد اللعبة في المسار التالي:</div>
+      <div id="path-confirm-text" style="font-size: 12px; color: #5EEAD4; background: rgba(94, 234, 212, 0.1); padding: 8px; border-radius: 4px; word-break: break-all; margin: 10px 0; direction: ltr;"></div>
+      <div data-i18n-dir data-i18n="path.confirm.recommend" style="font-size: 13px; margin-top: 10px;">(موصى به لكي تعمل الأداة بشكل صحيح)</div>
+    </div>
+
+    <div class="w-divider"></div>
+
+    <div class="w-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="btn-secondary" style="flex: 1; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center;" data-action="closeModal" data-target="path-confirm-modal">
+          <span data-i18n="common.cancel" data-i18n-dir>إلغاء</span>
+        </button>
+        <button class="btn-teal" style="flex: 1; background: #0D9488; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center;" data-action="confirmSavePath">
+          <span data-i18n="path.save" data-i18n-dir>حفظ المسار</span>
+        </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Path Success Modal -->
+<div class="modal-overlay" id="path-success-modal">
+<div class="modal-wrap" data-i18n-dir>
+  <div class="modal">
+    <div class="glow-edge"></div>
+
+    <div class="circuits" aria-hidden="true">
+      <svg viewBox="0 0 440 520" preserveAspectRatio="none">
+        <g stroke="#5EEAD4" stroke-width="1" fill="none" opacity="0.45">
+          <path d="M0 90 H40 L55 105 H120" />
+          <circle cx="120" cy="105" r="3" fill="#5EEAD4" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+
+    <div class="w-header">
+      <h2 style="margin:0; font-size: 22px; font-weight: 700; color: #5EEAD4; text-align: center; line-height: 1.4;">
+        <div data-i18n="path.saved.title" data-i18n-dir>تم الحفظ!</div>
+      </h2>
+    </div>
+
+    <div class="w-content" style="text-align: center; line-height: 1.6; color: #a1a1aa; padding: 0 20px;">
+      <div data-i18n="path.saved.message" data-i18n-dir style="font-size: 16px; margin-bottom: 5px;">تم حفظ المسار بنجاح! الأداة جاهزة الآن.</div>
+    </div>
+
+    <div class="w-divider"></div>
+
+    <div class="w-actions" style="margin-top: 25px;">
+        <button class="btn-teal" style="width: 100%; display: flex; justify-content: center; align-items: center; background: #5EEAD4; color: #000; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;" data-action="closeModal" data-target="path-success-modal">
+          <span data-i18n="common.ok" data-i18n-dir>حسنًا</span>
+        </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script type="module" src="scripts/home.js"></script>
+<script type="module" src="scripts/tour.js"></script>
+<script type="module" src="scripts/modal_fit.js"></script>
+</body>
+</html>
