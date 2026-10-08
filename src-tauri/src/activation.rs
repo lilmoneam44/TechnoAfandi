@@ -92,17 +92,18 @@ pub fn map_version(v1: &str) -> &str {
 
 async fn get_latest_supported_tag(client: &reqwest::Client, fallback: &str) -> String {
     let url = "https://api.github.com/repos/lilmoneam44/TechnoAfandi/releases";
-    let req = client.get(url)
+    let req = client
+        .get(url)
         .header("User-Agent", "TechnoAfandi-FC-Tool")
         .send()
         .await;
-    
+
     if let Ok(resp) = req {
         if let Ok(releases) = resp.json::<serde_json::Value>().await {
             if let Some(arr) = releases.as_array() {
                 let mut max_version: Option<semver::Version> = None;
                 let mut max_tag = fallback.to_string();
-                
+
                 for release in arr {
                     let mut has_exe = false;
                     if let Some(assets) = release.get("assets").and_then(|a| a.as_array()) {
@@ -115,7 +116,7 @@ async fn get_latest_supported_tag(client: &reqwest::Client, fallback: &str) -> S
                             }
                         }
                     }
-                    
+
                     if has_exe {
                         if let Some(tag_name) = release.get("tag_name").and_then(|t| t.as_str()) {
                             let tag_clean = tag_name.trim_start_matches('v');
@@ -1427,8 +1428,7 @@ const GAME_EXE: &str = "fc27.exe";
 
 /// Base URL of the GitHub Releases that host one fc27.exe per game version.
 /// Release tags look like `v1.0.1`, `v1.0.2`, ... and each one carries an asset named `fc27.exe`.
-const FC27_RELEASE_BASE: &str =
-    "https://github.com/lilmoneam44/TechnoAfandi/releases/download";
+const FC27_RELEASE_BASE: &str = "https://github.com/lilmoneam44/TechnoAfandi/releases/download";
 
 /// Newest version we have an fc27.exe for. Used for the "downgrade" path (Case B)
 /// when the installed game is newer than anything we host.
@@ -1680,7 +1680,7 @@ async fn run_embedded_activator(
 
     emit_prog(app, 72.0, &format!("Running {}...", label));
     crate::logger::log_msg(game_dir, &format!("Running {}", label));
-    
+
     let log_path = game_dir.join("TA_Activator_Log.txt");
     let log_file1 = std::fs::File::create(&log_path).map_err(|e| e.to_string())?;
     let log_file2 = log_file1.try_clone().map_err(|e| e.to_string())?;
@@ -1749,14 +1749,23 @@ async fn run_embedded_activator(
         &format!("{} exited with code {:?}", label, exit_code),
     );
 
-    let output_str = std::fs::read_to_string(game_dir.join("TA_Activator_Log.txt")).unwrap_or_default();
+    let output_str =
+        std::fs::read_to_string(game_dir.join("TA_Activator_Log.txt")).unwrap_or_default();
     if !output_str.trim().is_empty() {
-        crate::logger::log_msg(game_dir, &format!("Activator output:\n{}", output_str.trim()));
+        crate::logger::log_msg(
+            game_dir,
+            &format!("Activator output:\n{}", output_str.trim()),
+        );
     }
 
     if !success {
         if strict {
-            return Err(format!("{} failed (exit code: {:?})\nOutput:\n{}", label, exit_code, output_str.trim()));
+            return Err(format!(
+                "{} failed (exit code: {:?})\nOutput:\n{}",
+                label,
+                exit_code,
+                output_str.trim()
+            ));
         }
         crate::logger::log_msg(
             game_dir,
@@ -2328,7 +2337,11 @@ pub async fn run_activation(
         match launch_and_verify(&app, &game_dir, &fc27_path, &cancel, &pause).await {
             Ok(ticket_found) => {
                 if ticket_found {
-                    emit_finish(&app, false, "Activation failed: Denuvo requested a new ticket.");
+                    emit_finish(
+                        &app,
+                        false,
+                        "Activation failed: Denuvo requested a new ticket.",
+                    );
                 } else {
                     emit_prog(&app, 100.0, "Activation complete");
                     let _ = std::fs::remove_file(game_dir.join("TechnoAfandi.log"));
@@ -2460,7 +2473,11 @@ pub async fn run_activation(
     match launch_and_verify(&app, &game_dir, &fc27_path, &cancel, &pause).await {
         Ok(ticket_found) => {
             if ticket_found {
-                emit_finish(&app, false, "Activation failed: Denuvo requested a new ticket.");
+                emit_finish(
+                    &app,
+                    false,
+                    "Activation failed: Denuvo requested a new ticket.",
+                );
             } else {
                 emit_prog(&app, 100.0, "Activation complete");
                 let _ = std::fs::remove_file(game_dir.join("TechnoAfandi.log"));

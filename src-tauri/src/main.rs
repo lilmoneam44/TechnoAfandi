@@ -196,9 +196,7 @@ fn open_url(url: String) -> Result<(), String> {
 
 fn is_managed_download_url(url: &str) -> bool {
     url.starts_with("https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/")
-        || url.starts_with(
-            "https://media.githubusercontent.com/media/lilmoneam44/TechnoAfandi/",
-        )
+        || url.starts_with("https://media.githubusercontent.com/media/lilmoneam44/TechnoAfandi/")
         || url.starts_with("https://github.com/lilmoneam44/TechnoAfandi/releases/download/")
 }
 
