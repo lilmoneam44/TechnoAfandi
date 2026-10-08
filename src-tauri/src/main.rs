@@ -195,9 +195,9 @@ fn open_url(url: String) -> Result<(), String> {
 }
 
 fn is_managed_download_url(url: &str) -> bool {
-    url.starts_with("https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/")
-        || url.starts_with("https://media.githubusercontent.com/media/lilmoneam44/TechnoAfandi/")
-        || url.starts_with("https://github.com/lilmoneam44/TechnoAfandi/releases/download/")
+    url.starts_with("https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/")
+        || url.starts_with("https://media.githubusercontent.com/media/lilmoneam44/EA-SPORTS-FC-27/")
+        || url.starts_with("https://github.com/lilmoneam44/EA-SPORTS-FC-27/releases/download/")
 }
 
 /// A state sidecar is only trusted when it has the shape written by our downloader
@@ -874,7 +874,7 @@ mod download_cleanup_tests {
         let state = dir.join("activation.state");
         std::fs::write(
             &state,
-            r#"{"source_url":"https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/main/file.dll","total_size":128,"parts_downloaded":[0,64]}"#,
+            r#"{"source_url":"https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/main/file.dll","total_size":128,"parts_downloaded":[0,64]}"#,
         )
         .unwrap();
         assert_eq!(managed_download_state(&state), Some(Some(128)));
@@ -884,7 +884,7 @@ mod download_cleanup_tests {
 
         std::fs::write(
             &state,
-            "single:https://github.com/lilmoneam44/TechnoAfandi/releases/download/v1/fc27.exe",
+            "single:https://github.com/lilmoneam44/EA-SPORTS-FC-27/releases/download/v1/fc27.exe",
         )
         .unwrap();
         assert_eq!(managed_download_state(&state), Some(None));

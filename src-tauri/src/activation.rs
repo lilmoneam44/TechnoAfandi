@@ -14,13 +14,13 @@ use tauri::Emitter;
 // The download logic below tries raw first, and if it detects an LFS pointer,
 // automatically retries with the media URL. So we can safely use raw here.
 const ACTIVATION64_URL: &str =
-    "https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/main/Activation64.dll";
+    "https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/main/Activation64.dll";
 const TECHNOAFANDI_DLL_URL: &str =
-    "https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/main/TechnoAfandi.dll";
+    "https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/main/TechnoAfandi.dll";
 const ANADIUS64_URL: &str =
-    "https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/main/anadius64.dll";
+    "https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/main/anadius64.dll";
 const LE_ZIP_RAW: &str =
-    "https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/main/Live%20Editor.zip";
+    "https://raw.githubusercontent.com/lilmoneam44/EA-SPORTS-FC-27/main/Live%20Editor.zip";
 
 #[derive(Clone, Serialize)]
 struct ProgressPayload {
@@ -91,7 +91,7 @@ pub fn map_version(v1: &str) -> &str {
 }
 
 async fn get_latest_supported_tag(client: &reqwest::Client, fallback: &str) -> String {
-    let url = "https://api.github.com/repos/lilmoneam44/TechnoAfandi/releases";
+    let url = "https://api.github.com/repos/lilmoneam44/EA-SPORTS-FC-27/releases";
     let req = client
         .get(url)
         .header("User-Agent", "TechnoAfandi-FC-Tool")
@@ -1428,7 +1428,7 @@ const GAME_EXE: &str = "fc27.exe";
 
 /// Base URL of the GitHub Releases that host one fc27.exe per game version.
 /// Release tags look like `v1.0.1`, `v1.0.2`, ... and each one carries an asset named `fc27.exe`.
-const FC27_RELEASE_BASE: &str = "https://github.com/lilmoneam44/TechnoAfandi/releases/download";
+const FC27_RELEASE_BASE: &str = "https://github.com/lilmoneam44/EA-SPORTS-FC-27/releases/download";
 
 /// Newest version we have an fc27.exe for. Used for the "downgrade" path (Case B)
 /// when the installed game is newer than anything we host.
