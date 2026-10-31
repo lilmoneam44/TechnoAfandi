@@ -835,7 +835,6 @@ fn main() {
             exit_app,
         ])
         .setup(|app| {
-            logger::init_logger(app.handle());
 
             if let Some(window) = app.get_webview_window("main") {
                 let w = window.clone();
