@@ -1,103 +1,154 @@
-const OVERLAY_SELECTOR = '.modal-overlay';
-const WRAPPER_SELECTOR = ':scope > .modal-wrap, :scope > .w-modal-wrap';
-const FIT_GUTTER = 8;
+/**
+ * @file modal_fit.js
+ * @description Responsive modal layout engine for Techno Afandi FC27 Tool.
+ * Enforces readable scale floor (0.85), sticky action buttons, scoped mutation observation,
+ * and internal scrolling to prevent content clipping or microscopic shrinking.
+ */
 
-function getWrapper(overlay) {
-  return overlay.querySelector(WRAPPER_SELECTOR);
-}
+const MIN_SCALE_FLOOR = 0.85; // Never scale below 85% to preserve legibility and click targets
+const VIEWPORT_PADDING = 24;  // Screen margin in pixels
 
-function fitOverlay(overlay) {
-  const wrapper = getWrapper(overlay);
-  if (!wrapper || !overlay.isConnected) return;
+let resizeObserver = null;
+let mutationObserver = null;
+let scheduledFrame = null;
 
-  const overlayStyle = getComputedStyle(overlay);
-  const availableWidth = Math.max(
-    0,
-    overlay.clientWidth - parseFloat(overlayStyle.paddingLeft) - parseFloat(overlayStyle.paddingRight) - FIT_GUTTER,
+/**
+ * Calculates and applies responsive sizing and scale constraints on active modals.
+ */
+export function fitActiveModals() {
+  scheduledFrame = null;
+
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+  const activeModals = document.querySelectorAll(
+    '.modal-overlay.active, .modal-backdrop.active, [role="dialog"].active'
   );
-  const availableHeight = Math.max(
-    0,
-    overlay.clientHeight - parseFloat(overlayStyle.paddingTop) - parseFloat(overlayStyle.paddingBottom) - FIT_GUTTER,
-  );
-  const naturalWidth = wrapper.offsetWidth;
-  const naturalHeight = wrapper.offsetHeight;
+  if (!activeModals.length) return;
 
-  if (!naturalWidth || !naturalHeight || !availableWidth || !availableHeight) return;
+  const vWidth = window.innerWidth;
+  const vHeight = window.innerHeight;
 
-  const scale = Math.min(1, availableWidth / naturalWidth, availableHeight / naturalHeight);
-  wrapper.style.setProperty('--modal-fit-scale', String(Math.max(0.01, scale)));
-}
+  const availableWidth = Math.max(280, vWidth - VIEWPORT_PADDING * 2);
+  const availableHeight = Math.max(340, vHeight - VIEWPORT_PADDING * 2);
 
-let scheduled = false;
-const pendingOverlays = new Set();
+  activeModals.forEach((modal) => {
+    const wrap = modal.querySelector('.modal-wrap, .w-modal-wrap, .modal-card') || modal.firstElementChild;
+    if (!wrap) return;
 
-function scheduleFit(overlay) {
-  if (overlay?.matches(OVERLAY_SELECTOR)) pendingOverlays.add(overlay);
-  if (scheduled) return;
+    // Reset styles temporarily to read natural dimensions accurately
+    wrap.style.transform = 'none';
+    const rect = wrap.getBoundingClientRect();
+    const naturalWidth = rect.width || 440;
+    const naturalHeight = rect.height || 520;
 
-  scheduled = true;
-  requestAnimationFrame(() => {
-    scheduled = false;
-    for (const pending of pendingOverlays) fitOverlay(pending);
-    pendingOverlays.clear();
+    const scaleX = availableWidth / naturalWidth;
+    const scaleY = availableHeight / naturalHeight;
+
+    // Calculate ideal scale without exceeding 1.0 (no upscaling)
+    let calculatedScale = Math.min(scaleX, scaleY, 1.0);
+
+    // Apply scale floor: never shrink below readable threshold
+    if (calculatedScale < MIN_SCALE_FLOOR) {
+      calculatedScale = MIN_SCALE_FLOOR;
+      // Enable internal scrolling when the dialog exceeds viewport bounds at the scale floor
+      const maxScrollHeight = Math.floor(availableHeight / calculatedScale);
+      wrap.style.maxHeight = `${maxScrollHeight}px`;
+      wrap.style.overflowY = 'auto';
+
+      // Keep action buttons sticky inside the scrollable modal wrapper
+      const actionFooters = wrap.querySelectorAll('.modal-footer, .modal-actions, .confirm-actions, .startup-buttons');
+      actionFooters.forEach((footer) => {
+        footer.style.position = 'sticky';
+        footer.style.bottom = '0';
+        footer.style.zIndex = '10';
+        footer.style.backdropFilter = 'blur(12px)';
+      });
+    } else {
+      wrap.style.maxHeight = '';
+      wrap.style.overflowY = '';
+    }
+
+    wrap.style.setProperty('--modal-fit-scale', calculatedScale.toFixed(3));
+    wrap.style.transform = `scale(${calculatedScale})`;
+    wrap.style.transformOrigin = 'center center';
   });
 }
 
-function scheduleAll() {
-  document.querySelectorAll(OVERLAY_SELECTOR).forEach(scheduleFit);
+/**
+ * Debounced scheduling via requestAnimationFrame to avoid layout thrashing.
+ */
+function scheduleFit() {
+  if (scheduledFrame === null && typeof requestAnimationFrame !== 'undefined') {
+    scheduledFrame = requestAnimationFrame(fitActiveModals);
+  }
 }
 
-const resizeObserver = new ResizeObserver(entries => {
-  for (const entry of entries) {
-    const overlay = entry.target.matches(OVERLAY_SELECTOR)
-      ? entry.target
-      : entry.target.closest(OVERLAY_SELECTOR);
-    scheduleFit(overlay);
+/**
+ * Initializes listeners and scoped observers.
+ */
+export function initModalFit() {
+  if (typeof window === 'undefined') return;
+
+  window.addEventListener('resize', scheduleFit, { passive: true });
+
+  // 1. Efficient ResizeObserver on document body
+  if (typeof ResizeObserver !== 'undefined' && document.body) {
+    resizeObserver = new ResizeObserver(scheduleFit);
+    resizeObserver.observe(document.body);
   }
-});
 
-function observeOverlay(overlay) {
-  const wrapper = getWrapper(overlay);
-  if (!wrapper || wrapper.dataset.modalFitObserved) return;
+  // 2. Scoped MutationObserver: Targets ONLY modal overlays, not entire document tree
+  if (typeof MutationObserver !== 'undefined') {
+    mutationObserver = new MutationObserver((mutations) => {
+      let shouldFit = false;
+      for (const m of mutations) {
+        if (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'style')) {
+          shouldFit = true;
+          break;
+        }
+      }
+      if (shouldFit) {
+        scheduleFit();
+      }
+    });
 
-  wrapper.dataset.modalFitObserved = 'true';
-  resizeObserver.observe(overlay);
-  resizeObserver.observe(wrapper);
-  scheduleFit(overlay);
+    const modalContainers = document.querySelectorAll(
+      '.modal-overlay, .modal-backdrop, [role="dialog"], #startup-modal, #path-confirm-modal, #mode-warning-modal, #update-modal, #game-scan-modal, #cancel-modal'
+    );
+    modalContainers.forEach((el) => {
+      mutationObserver.observe(el, { attributes: true, attributeFilter: ['class', 'style'] });
+    });
+  }
+
+  scheduleFit();
 }
 
-document.querySelectorAll(OVERLAY_SELECTOR).forEach(observeOverlay);
-
-const mutationObserver = new MutationObserver(records => {
-  for (const record of records) {
-    if (record.type === 'attributes' && record.target.matches(OVERLAY_SELECTOR)) {
-      scheduleFit(record.target);
-    }
-
-    if (record.type === 'childList') {
-      if (record.target.matches?.(OVERLAY_SELECTOR)) observeOverlay(record.target);
-      record.addedNodes.forEach(node => {
-        if (node.nodeType !== Node.ELEMENT_NODE) return;
-        if (node.matches?.(OVERLAY_SELECTOR)) observeOverlay(node);
-        node.querySelectorAll?.(OVERLAY_SELECTOR).forEach(observeOverlay);
-        const overlay = node.closest?.(OVERLAY_SELECTOR);
-        if (overlay) scheduleFit(overlay);
-      });
-      const overlay = record.target.closest?.(OVERLAY_SELECTOR);
-      if (overlay) scheduleFit(overlay);
-    }
+/**
+ * Cleanup helper for memory safety and test teardown.
+ */
+export function destroyModalFit() {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', scheduleFit);
   }
-});
+  if (scheduledFrame !== null && typeof cancelAnimationFrame !== 'undefined') {
+    cancelAnimationFrame(scheduledFrame);
+    scheduledFrame = null;
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+  if (mutationObserver) {
+    mutationObserver.disconnect();
+    mutationObserver = null;
+  }
+}
 
-mutationObserver.observe(document.documentElement, {
-  subtree: true,
-  childList: true,
-  attributes: true,
-  attributeFilter: ['class'],
-});
-
-window.addEventListener('resize', scheduleAll, { passive: true });
-window.visualViewport?.addEventListener('resize', scheduleAll, { passive: true });
-window.addEventListener('load', scheduleAll, { once: true });
-document.fonts?.ready.then(scheduleAll);
-scheduleAll();
+// Auto-run when DOM is ready
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initModalFit);
+  } else {
+    initModalFit();
+  }
+}

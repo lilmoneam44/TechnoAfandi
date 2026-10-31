@@ -1,842 +1,366 @@
-import { t, currentLanguage } from './i18n.js';
-
 /**
- * TechnoAfandi FC — Interactive Tour System
- * Runs a guided spotlight tour across home and version pages.
+ * @file tour.js
+ * @description Complete, production-grade onboarding spotlight tour for Techno Afandi FC27 Tool.
+ * Language-independent navigation (supports Arabic RTL and English LTR), viewport boundary clamping,
+ * missing target fallback, clean listener teardown, and cross-page state resumption.
  */
 
-// ───────────────────────── helpers ─────────────────────────
-const SS_KEY = 'ta_tour_step';
+import { t } from './i18n.js';
 
-function setStep(n) { try { sessionStorage.setItem(SS_KEY, n); } catch (_) {} }
-function getStep()  { try { return parseInt(sessionStorage.getItem(SS_KEY) ?? '-1'); } catch (_) { return -1; } }
-function clearTour(){ try { sessionStorage.removeItem(SS_KEY); } catch (_) {} }
+let activeStepIndex = 0;
+let tourOverlayElement = null;
+let tourTooltipElement = null;
+let keyListener = null;
+let resizeListener = null;
 
-// ───────────────────────── spotlight UI ─────────────────────
-let overlay, spotlight, tooltip;
-let currentTooltipOptions = null;
-let tourReturnFocus = null;
+/**
+ * Standard onboarding tour sequence definitions.
+ */
+export const DEFAULT_TOUR_STEPS = [
+  {
+    id: 'step_titlebar',
+    page: 'home',
+    targetSelector: '.titlebar',
+    titleKey: 'tour.titlebar.title',
+    descKey: 'tour.titlebar.desc',
+    defaultTitle: 'شريط العنوان والتحكم | Window Titlebar',
+    defaultDesc: 'يمكنك التحكم بالنافذة وتغيير لغة التطبيق من هنا في أي وقت. Control window states and toggle languages anytime here.'
+  },
+  {
+    id: 'step_mode',
+    page: 'home',
+    targetSelector: '.mode-group, [role="radiogroup"], #opt-fmm',
+    titleKey: 'tour.mode.title',
+    descKey: 'tour.mode.desc',
+    defaultTitle: 'اختيار نمط التشغيل | Mode Selection',
+    defaultDesc: 'اختر بين نمط FMM للأطقم والمودات أو Live Editor للتعديل المباشر. Toggle between FMM for custom mods or Live Editor for memory editing.'
+  },
+  {
+    id: 'step_launch',
+    page: 'home',
+    targetSelector: '#launch-btn, [data-action="continueToVersion"], .btn-neon',
+    titleKey: 'tour.launch.title',
+    descKey: 'tour.launch.desc',
+    defaultTitle: 'زر الإطلاق والتفعيل | Launch & Activation',
+    defaultDesc: 'اضغط هنا للتحقق التلقائي من مسار اللعبة والانتقال لشاشة التفعيل. Verify game folder and proceed to activation.'
+  },
+  {
+    id: 'step_activation',
+    page: 'version',
+    targetSelector: '#btn-start-activation, .btn-action-start, .circular-progress',
+    titleKey: 'tour.activation.title',
+    descKey: 'tour.activation.desc',
+    defaultTitle: 'بدء التفعيل والتشغيل | Start Activation',
+    defaultDesc: 'ابدأ عملية فحص وتطبيق ملفات التفعيل مع إمكانية الإيقاف المؤقت أو الإلغاء. Start patching and activation with pause/resume support.'
+  }
+];
 
-function buildOverlay() {
-  if (document.getElementById('ta-tour-overlay')) return;
+/**
+ * Creates the SVG spotlight overlay and dialog container in the DOM.
+ */
+function createTourDOM() {
+  if (tourOverlayElement || tourTooltipElement) {
+    destroyTourDOM();
+  }
 
-  overlay = document.createElement('div');
-  overlay.id = 'ta-tour-overlay';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', t('tour.heading'));
-  overlay.tabIndex = -1;
-  tourReturnFocus = document.activeElement;
-  Object.assign(overlay.style, {
-    position: 'fixed', inset: '0', zIndex: '9999',
-    pointerEvents: 'all', // BLOCK ALL CLICKS TO PAGE
-  });
+  if (typeof document === 'undefined') return;
 
-  // SVG spotlight mask
-  spotlight = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  spotlight.setAttribute('id', 'ta-tour-spotlight');
-  Object.assign(spotlight.style, {
-    position: 'absolute', inset: '0', width: '100%', height: '100%',
-    pointerEvents: 'none',
-  });
-  spotlight.innerHTML = `
-    <defs>
-      <mask id="ta-hole-mask">
-        <rect width="100%" height="100%" fill="white"/>
-        <rect id="ta-hole" rx="12" ry="12" fill="black"/>
-      </mask>
-    </defs>
-    <rect width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#ta-hole-mask)"/>
-    <rect id="ta-hole-border" rx="12" ry="12" fill="none" stroke="#7CFFE1" stroke-width="2" opacity="0.85"/>
+  // 1. Fullscreen SVG Mask Overlay
+  tourOverlayElement = document.createElement('div');
+  tourOverlayElement.className = 'tour-spotlight-backdrop';
+  tourOverlayElement.setAttribute('aria-hidden', 'true');
+  tourOverlayElement.style.cssText = `
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99998;
+    pointer-events: auto;
   `;
 
-  // Tooltip
-  tooltip = document.createElement('div');
-  tooltip.id = 'ta-tour-tooltip';
-  overlay.setAttribute('aria-describedby', tooltip.id);
-  Object.assign(tooltip.style, {
-    position: 'absolute',
-    background: 'linear-gradient(180deg,rgba(18,28,26,0.96) 0%,rgba(10,12,11,0.98) 100%)',
-    border: '1.5px solid rgba(124,255,225,0.45)',
-    borderRadius: '14px',
-    padding: '16px 18px 14px',
-    width: 'min(320px, calc(100vw - 20px))',
-    maxWidth: 'calc(100vw - 20px)',
-    minWidth: '0',
-    boxShadow: '0 0 40px rgba(124,255,225,0.2), 0 8px 32px rgba(0,0,0,0.6)',
-    fontFamily: "'Noto Sans Arabic','Inter',sans-serif",
-    color: '#F5F5F7',
-    pointerEvents: 'all',
-    transition: 'opacity 0.3s ease, transform 0.3s ease',
-    opacity: '0',
-    transform: 'translateY(8px)',
-  });
-
-  overlay.appendChild(spotlight);
-  overlay.appendChild(tooltip);
-  document.body.appendChild(overlay);
-}
-
-function showSpotlight(el, pad = 10) {
-  const r = el.getBoundingClientRect();
-  const hole   = document.getElementById('ta-hole');
-  const border = document.getElementById('ta-hole-border');
-  const attrs = {
-    x: r.left - pad, y: r.top - pad,
-    width: r.width + pad * 2, height: r.height + pad * 2,
-  };
-  ['x','y','width','height'].forEach(k => {
-    hole.setAttribute(k, attrs[k]);
-    border.setAttribute(k, attrs[k]);
-  });
-
-  // Position tooltip after DOM updates from showTooltip
-  requestAnimationFrame(() => {
-    const tt = tooltip;
-    const ttW = tt.offsetWidth > 0 ? tt.offsetWidth : 280;
-    const ttH = tt.offsetHeight > 0 ? tt.offsetHeight : 160;
-    let top = r.bottom + pad + 14;
-    let left = r.left + r.width / 2 - ttW / 2;
-
-    // if placing it below overflows the window, place it above
-    if (top + ttH > window.innerHeight - 20) {
-        top = r.top - ttH - pad - 14;
-    }
-    
-    // ensure it doesn't go off screen
-    if (top < 10) top = 10;
-    if (left < 10) left = 10;
-    if (left + ttW > window.innerWidth - 10) left = window.innerWidth - ttW - 10;
-
-    tt.style.top  = top  + 'px';
-    tt.style.left = left + 'px';
-  });
-}
-
-function showTooltip(options) {
-  currentTooltipOptions = options;
-  const { ar, en, step, total, onNext, onPrev, nextLabel = 'التالي', color = '#7CFFE1' } = options;
-  tooltip.style.opacity = '0';
-  tooltip.style.transform = 'translateY(8px)';
-
-  const language = currentLanguage();
-  const direction = language === 'ar' ? 'rtl' : 'ltr';
-  const alignment = language === 'ar' ? 'right' : 'left';
-  const description = language === 'ar' ? ar : en;
-  const actionKey = nextLabel === 'الصفحة التالية'
-    ? 'tour.nextPage'
-    : nextLabel === 'ابدأ محاكاة'
-      ? 'tour.simulate'
-      : nextLabel === 'إنهاء الجولة ✓'
-        ? 'tour.finish'
-        : 'tour.next';
-
-  tooltip.innerHTML = `
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <span style="width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};flex-shrink:0;display:inline-block"></span>
-      <span style="font-family:'Inter','Tahoma',sans-serif;font-size:11px;color:${color}">${t('tour.heading', language)} · ${step}/${total}</span>
-    </div>
-    <p id="ta-tour-description" style="font-size:14px;line-height:1.7;margin-bottom:14px;direction:${direction};text-align:${alignment};color:#F5F5F7">${description || ''}</p>
-    <div style="display:flex;gap:8px;direction:${direction}">
-      <button id="ta-tour-prev" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;font-family:'Inter','Tahoma',sans-serif;font-size:12px;background:rgba(255,255,255,0.04);color:#A6A4B8">${t('tour.previous', language)}</button>
-      <button id="ta-tour-next" style="flex:2;padding:9px 12px;border-radius:9px;border:none;cursor:pointer;font-family:'Inter','Tahoma',sans-serif;font-size:13px;font-weight:600;background:linear-gradient(90deg,${color},#9B6EF3);color:#03100c;box-shadow:0 4px 14px rgba(124,255,225,0.3);white-space:nowrap">${t(actionKey, language)}</button>
-    </div>
+  tourOverlayElement.innerHTML = `
+    <svg width="100%" height="100%" style="position: absolute; inset: 0;">
+      <defs>
+        <mask id="tour-spotlight-mask">
+          <rect width="100%" height="100%" fill="white" />
+          <rect id="tour-spotlight-cutout" x="0" y="0" width="0" height="0" rx="8" ry="8" fill="black" />
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="rgba(10, 10, 13, 0.78)" mask="url(#tour-spotlight-mask)" />
+    </svg>
   `;
 
-  document.getElementById('ta-tour-next').addEventListener('click', onNext);
-  document.getElementById('ta-tour-prev').addEventListener('click', () => {
-    if (onPrev) {
-      onPrev();
-    } else {
-      const isHome = window.location.pathname.includes('home_page_v2');
-      if (isHome) {
-        if (step > 1) {
-          document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-          runHomeStep(step - 1);
-        }
-      } else {
-        if (step > TOTAL_HOME_STEPS + 1) {
-          document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-          runVersionStep(step - 1);
-        } else if (step === TOTAL_HOME_STEPS + 1) {
-          // Go back to home page, last step
-          sessionStorage.setItem('ta_tour_step', TOTAL_HOME_STEPS.toString());
-          window.location.href = 'home_page_v2.html';
-        }
-      }
-    }
-  });
+  // 2. Accessible Tooltip Dialog
+  tourTooltipElement = document.createElement('div');
+  tourTooltipElement.className = 'tour-tooltip-card';
+  tourTooltipElement.setAttribute('role', 'dialog');
+  tourTooltipElement.setAttribute('aria-modal', 'true');
+  tourTooltipElement.style.cssText = `
+    position: fixed;
+    z-index: 99999;
+    width: min(360px, calc(100vw - 32px));
+    background: rgba(18, 18, 24, 0.94);
+    border: 1px solid var(--teal-1, #8CFFF0);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(140, 255, 240, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(16px);
+    color: #F5F5F7;
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: top 0.2s ease, left 0.2s ease;
+  `;
 
-  overlay.setAttribute('aria-label', t('tour.heading', language));
-  overlay.setAttribute('aria-describedby', 'ta-tour-description');
-  document.getElementById('ta-tour-next').focus({ preventScroll: true });
-
-  requestAnimationFrame(() => {
-    tooltip.style.opacity = '1';
-    tooltip.style.transform = 'translateY(0)';
-  });
+  document.body.appendChild(tourOverlayElement);
+  document.body.appendChild(tourTooltipElement);
 }
 
-document.addEventListener('ta-language-changed', () => {
-  if (tooltip && currentTooltipOptions) showTooltip(currentTooltipOptions);
-});
+/**
+ * Removes all tour elements from the DOM.
+ */
+function destroyTourDOM() {
+  if (tourOverlayElement && tourOverlayElement.parentNode) {
+    tourOverlayElement.parentNode.removeChild(tourOverlayElement);
+  }
+  if (tourTooltipElement && tourTooltipElement.parentNode) {
+    tourTooltipElement.parentNode.removeChild(tourTooltipElement);
+  }
+  tourOverlayElement = null;
+  tourTooltipElement = null;
+}
 
-document.addEventListener('keydown', (event) => {
-  if (!overlay) return;
-  if (event.key === 'Escape') {
-    event.preventDefault();
+/**
+ * Positions tooltip relative to target rect with boundary clamping.
+ * @param {DOMRect} targetRect 
+ * @param {HTMLElement} tooltip 
+ */
+function positionTooltip(targetRect, tooltip) {
+  if (typeof window === 'undefined') return;
+
+  const vWidth = window.innerWidth || 1024;
+  const vHeight = window.innerHeight || 768;
+  const tRect = tooltip.getBoundingClientRect();
+  const margin = 14;
+
+  let top = targetRect.bottom + margin;
+  let left = targetRect.left + (targetRect.width - tRect.width) / 2;
+
+  // Flip above target if bottom clips
+  if (top + tRect.height > vHeight - margin) {
+    top = targetRect.top - tRect.height - margin;
+  }
+
+  // Fallback: If top also clips (target is very tall), align to top of target
+  if (top < margin) {
+    top = margin;
+  }
+
+  // Horizontal screen boundary clamping
+  left = Math.max(margin, Math.min(left, vWidth - tRect.width - margin));
+  top = Math.max(margin, Math.min(top, vHeight - tRect.height - margin));
+
+  tooltip.style.top = `${Math.round(top)}px`;
+  tooltip.style.left = `${Math.round(left)}px`;
+}
+
+/**
+ * Renders a specific step in the tour.
+ * @param {Array} steps 
+ * @param {number} index 
+ */
+function renderStep(steps, index) {
+  if (!steps || !steps.length || index < 0 || index >= steps.length) {
     endTour();
     return;
   }
-  if (event.key !== 'Tab') return;
-  const buttons = [...overlay.querySelectorAll('button:not([disabled])')];
-  if (!buttons.length) {
-    event.preventDefault();
-    overlay.focus();
+
+  activeStepIndex = index;
+  const step = steps[index];
+
+  if (typeof document === 'undefined') return;
+
+  // Missing target handling: look for target element
+  let target = null;
+  const selectors = step.targetSelector.split(',').map((s) => s.trim());
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el) {
+      target = el;
+      break;
+    }
+  }
+
+  // If target element is not found on current page/view, advance to next step or finish
+  if (!target) {
+    if (index + 1 < steps.length) {
+      renderStep(steps, index + 1);
+    } else {
+      endTour();
+    }
     return;
   }
-  const first = buttons[0];
-  const last = buttons.at(-1);
-  if (event.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
-    event.preventDefault();
-    first.focus();
-  }
-});
 
-function endTour() {
-  clearTour();
-  if (overlay) overlay.remove();
-  overlay = spotlight = tooltip = null;
-  currentTooltipOptions = null;
-  const savedFocus = tourReturnFocus;
-  tourReturnFocus = null;
-  if (savedFocus instanceof HTMLElement && savedFocus.isConnected && savedFocus.getClientRects().length > 0) {
-    savedFocus.focus({ preventScroll: true });
-  } else {
-    document.querySelector('#start-btn:not([disabled]), .app-panel .btn-start:not([disabled])')?.focus({ preventScroll: true });
-  }
-}
-
-// ───────────────────────── scroll to element ────────────────
-function scrollIntoViewAndWait(el) {
-  return new Promise(res => {
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(res, 450);
-  });
-}
-
-// ───────────────────────── Home Page Tour Steps ─────────────
-const HOME_STEPS = [
-  // Step 1 – link buttons
-  async function step1() {
-    const links = document.querySelector('.links');
-    await scrollIntoViewAndWait(links);
-    showSpotlight(links, 6);
-    showTooltip({
-      ar: 'دي لينكات اشهر صفحاتنا ديسكورد و FC 27 page و صفحة التواصل معانا وصفحة اليوتيوب',
-      en: 'Discord server , FC 27 page , Social links , YouTube page',
-      step: 1, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runHomeStep(2),
-    });
-  },
-
-  // Step 2 – mode options
-  async function step2() {
-    const modes = document.querySelector('.modes');
-    await scrollIntoViewAndWait(modes);
-    showSpotlight(modes, 6);
-    showTooltip({
-      ar: 'خيارات تشغيل اللعبة المتاحة FMM | Live Editor',
-      en: 'Game launch options FMM | Live Editor',
-      step: 2, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runHomeStep(3),
-    });
-  },
-
-  // Step 3 – continue button
-  async function step3() {
-    const btn = document.querySelector('.btn-start');
-    await scrollIntoViewAndWait(btn);
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'لما تختار الوضع، اضغط على الزر ده وهيوديك لصفحة الإصدار للتحقق من إصدار لعبتك.',
-      en: 'After selecting a mode, press this button to go to the version review page.',
-      step: 3, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runHomeStep(4),
-    });
-  },
-
-  // Step 4 – Mode Selection Required modal
-  async function step4() {
-    const modalOverlay = document.getElementById('mode-warning-modal');
-    modalOverlay.classList.add('active'); // Show the modal
-    
-    // Wait for the modal transition to complete
-    await new Promise(r => setTimeout(r, 200));
-    
-    const modal = modalOverlay.querySelector('.modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'اختر مود من مودات التشغيل FMM | Live Editor',
-      en: 'Please Choose game run option FMM | Live Editor',
-      step: 4, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        modalOverlay.classList.remove('active'); // Hide it when moving to next
-        runHomeStep(5);
-      },
-    });
-  },
-
-  // Step 5 – Game Folder Not Found modal
-  async function step5() {
-    const modalOverlay = document.getElementById('error-modal');
-    modalOverlay.classList.add('active'); // Show the modal
-    
-    // Wait for the modal transition to complete
-    await new Promise(r => setTimeout(r, 200));
-    
-    const modal = modalOverlay.querySelector('.modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'انقل الاداة جوا فولدر اللعبة',
-      en: 'Please move the tool into the game folder',
-      step: 5, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        modalOverlay.classList.remove('active'); // Hide it when moving to next
-        runHomeStep(6);
-      },
-    });
-  },
-
-  // Step 6 – Auto Locate button in error modal
-  async function step6() {
-    const modalOverlay = document.getElementById('error-modal');
-    modalOverlay.classList.add('active'); // Show the modal
-    
-    // Wait for the modal transition to complete
-    await new Promise(r => setTimeout(r, 200));
-    
-    const btn = document.getElementById('btn-auto-locate');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'الخيار ده هيدور على فولدر اللعبة على جهازك وينقل الاداة فيه ويشغلهالك تاني',
-      en: 'it will look up for the game folder in ur device and relaunh the tool again',
-      step: 6, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        modalOverlay.classList.remove('active'); // Hide it when moving to next
-        runHomeStep(7);
-      },
-    });
-  },
-
-  // Step 7 – Manually Locate button in error modal
-  async function step7() {
-    const modalOverlay = document.getElementById('error-modal');
-    modalOverlay.classList.add('active'); // Show the modal
-    
-    // Wait for the modal transition to complete
-    await new Promise(r => setTimeout(r, 200));
-    
-    const btn = document.querySelector('.btn-manual');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'الخيار ده هيفتحلك نافذة تختار منها فولدر اللعبة وينقل الاداة فيها ويشغلها تاني',
-      en: 'it will open a window to manually select the game folder and relaunch the tool again',
-      step: 7, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        modalOverlay.classList.remove('active'); // Hide it when moving to next
-        runHomeStep(8);
-      },
-    });
-  },
-
-  // Step 8 – Update modal
-  async function step8() {
-    const modalOverlay = document.getElementById('update-modal');
-    modalOverlay.classList.add('active'); // Show the modal
-    
-    // Wait for the modal transition to complete
-    await new Promise(r => setTimeout(r, 200));
-    
-    const modal = modalOverlay.querySelector('.modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'هتظهرلك لو في تحديث نزل للاداة',
-      en: 'it will appear when there is an update for the tool',
-      step: 8, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        runHomeStep(9);
-      },
-    });
-  },
-
-  // Step 9 – Update Now button
-  async function step9() {
-    const modalOverlay = document.getElementById('update-modal');
-    modalOverlay.classList.add('active'); // Ensure it is shown
-    
-    await new Promise(r => setTimeout(r, 100));
-    
-    const btn = document.querySelector('.btn-update');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيحملك الاصدار الجديد بتاع الاداة ويسطبهولك ويشغلهالك',
-      en: 'it will download the newest tool version and install it then relaunch the tool',
-      step: 9, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        runHomeStep(10);
-      },
-    });
-  },
-
-  // Step 10 – Remind Me Later button
-  async function step10() {
-    const modalOverlay = document.getElementById('update-modal');
-    modalOverlay.classList.add('active'); // Ensure it is shown
-    
-    await new Promise(r => setTimeout(r, 100));
-    
-    const btn = document.querySelector('.btn-close');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيسكبلك خطوة الابديت',
-      en: 'it will skip the update option',
-      step: 10, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      nextLabel: 'الصفحة التالية',
-      onNext: () => {
-        modalOverlay.classList.remove('active');
-        try { sessionStorage.setItem('ta_mode', 'FMM'); } catch(_) {}
-        setStep(11); // jump to version page steps
-        window.location.href = 'version_page_v2.html';
-      },
-    });
-  },
-];
-const TOTAL_HOME_STEPS = HOME_STEPS.length;
-
-function runHomeStep(n) {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-  setStep(n);
-  HOME_STEPS[n - 1]?.();
-}
-
-// ───────────────────────── Version Page Tour Steps ──────────
-const VERSION_STEPS = [
-  // Step 10 – version card
-  async function step10() {
-    const card = document.querySelector('.version-card');
-    if (!card) { runVersionStep(12); return; }
-    
-    const vmain = document.getElementById('vmain');
-    const vsem = document.getElementById('vsem');
-    if (vmain && (vmain.innerText.includes('Loading') || vmain.innerText.includes('Unknown'))) {
-      vmain.innerText = ' 1.0.138.16746 ';
-    }
-    if (vsem && (vsem.innerText.includes('...') || vsem.innerText.includes('Unknown'))) {
-      vsem.innerText = ' 1.6.4 ';
-    }
-
-    await scrollIntoViewAndWait(card);
-    showSpotlight(card, 8);
-    showTooltip({
-      ar: 'ده اصدار اللعبة الحالي عندك',
-      en: "it's ur game version",
-      step: TOTAL_HOME_STEPS + 1, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runVersionStep(12)
-    });
-  },
-
-  // Step 11 – start activation button
-  async function step11() {
-    const btn = document.getElementById('start-btn');
-    await scrollIntoViewAndWait(btn);
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيبدا عملية التنزيل والتفعيل',
-      en: 'it starts downloading and activation steps',
-      step: TOTAL_HOME_STEPS + 2, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      nextLabel: 'ابدأ محاكاة',
-      onNext: () => runVersionStep(13)
-    });
-  },
-
-  // Step 12 – fake activation demo
-  async function step12() {
-    const container = document.getElementById('progress-container');
-    if (!container) { runVersionStep(14); return; }
-    container.style.display = 'block';
-    
-    // set initial status for tour step
-    const fill = document.getElementById('progress-fill');
-    const pct  = document.getElementById('progress-pct');
-    const txt  = document.getElementById('progress-text-content');
-    if(fill) fill.style.width = '42%';
-    if(pct) pct.textContent = '42%';
-    if(txt) txt.textContent = 'Downloading patch files...';
-
-    // Show action buttons so they look natural
-    const pauseBtn = document.getElementById('pause-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    if (pauseBtn) pauseBtn.classList.add('active');
-    if (cancelBtn) cancelBtn.classList.add('active');
-
-    await scrollIntoViewAndWait(container);
-    showSpotlight(container, 8);
-    showTooltip({
-      ar: 'خطوات التحميل للملفات والتفعيل لحد ماللعبة تشتغل',
-      en: 'files downloading steps and activation till run the game',
-      step: TOTAL_HOME_STEPS + 3, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runVersionStep(14)
-    });
-  },
-
-  // Step 13 – pause button
-  async function step13() {
-    const btn = document.getElementById('pause-btn');
-    if (btn) btn.classList.add('active'); // ensure it's visible
-    await scrollIntoViewAndWait(btn);
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيوقف عملية التحميل لحد ماتستكملها',
-      en: 'it pauses the downloads and activation',
-      step: TOTAL_HOME_STEPS + 4, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#A855F7',
-      onNext: () => runVersionStep(15)
-    });
-  },
-
-  // Step 14 – cancel button
-  async function step14() {
-    const btn = document.getElementById('cancel-btn');
-    if (btn) btn.classList.add('active'); // ensure it's visible
-    await scrollIntoViewAndWait(btn);
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيلغي عمليات التحميل والتفعيل الجارية',
-      en: 'it cancels downloads and activation running',
-      step: TOTAL_HOME_STEPS + 5, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#A855F7',
-      onNext: () => runVersionStep(16)
-    });
-  },
-
-  // Step 15 – cancel modal
-  async function step15() {
-    const modalOverlay = document.getElementById('cancel-modal');
-    modalOverlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 200));
-    const modal = modalOverlay.querySelector('.modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'تاكيد انك عايز تلغي التفعيل الجاري',
-      en: 'confirms u wanna to cancel activation running',
-      step: TOTAL_HOME_STEPS + 6, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runVersionStep(17)
-    });
-  },
-
-  // Step 16 – Resume choice
-  async function step16() {
-    const modalOverlay = document.getElementById('cancel-modal');
-    modalOverlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 100));
-    const choice = document.querySelector('.choice-option:nth-child(1)');
-    showSpotlight(choice, 6);
-    showTooltip({
-      ar: 'استكمال عملية التفعيل الجارية',
-      en: 'resume activation running',
-      step: TOTAL_HOME_STEPS + 7, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runVersionStep(18)
-    });
-  },
-
-  // Step 17 – Keep files choice
-  async function step17() {
-    const modalOverlay = document.getElementById('cancel-modal');
-    modalOverlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 100));
-    const choice = document.querySelector('.choice-option:nth-child(2)');
-    showSpotlight(choice, 6);
-    showTooltip({
-      ar: 'الغاء عملية التفعيل مع الاحتفاظ بالملفات ا',
-      en: 'cancel the activation with keep files',
-      step: TOTAL_HOME_STEPS + 8, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runVersionStep(19)
-    });
-  },
-
-  // Step 18 – Delete files choice
-  async function step18() {
-    const modalOverlay = document.getElementById('cancel-modal');
-    modalOverlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 100));
-    const choice = document.querySelector('.choice-option:nth-child(3)');
-    showSpotlight(choice, 6);
-    showTooltip({
-      ar: 'الغاء عملية التفعيل مع عدم الاحتفاظ بالملفات',
-      en: 'cancel the activation with no keep files',
-      step: TOTAL_HOME_STEPS + 9, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runVersionStep(20)
-    });
-  },
-
-  // Step 19 – Sure about my choice
-  async function step19() {
-    const modalOverlay = document.getElementById('cancel-modal');
-    modalOverlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 100));
-    const btn = document.querySelector('#cancel-modal .btn-cancel');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'تاكيد لاختيارك السابق',
-      en: 'confirms ur choice',
-      step: TOTAL_HOME_STEPS + 10, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => {
-        modalOverlay.classList.remove('active');
-        runVersionStep(21);
-      }
-    });
-  },
-
-  // Step 20 – links
-  async function step20() {
-    const links = document.querySelector('.links');
-    await scrollIntoViewAndWait(links);
-    showSpotlight(links, 6);
-    showTooltip({
-      ar: 'نفس اللينكات من الصفحة الرئيسية — موجودة هنا برضو للوصول السريع أثناء التفعيل.',
-      en: 'Same community links are available here too for quick access during activation.',
-      step: TOTAL_HOME_STEPS + 11, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FFD54A',
-      onNext: () => runVersionStep(22)
-    });
-  },
-
-  // Step 21 – Failure popup
-  async function step21() {
-    if (typeof window.showFailure === 'function') window.showFailure();
-    await new Promise(r => setTimeout(r, 200));
-    const modal = document.querySelector('#result-modal .modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'هتظهرلك في حالة فشل التفعيل',
-      en: 'it appears when activation fails',
-      step: TOTAL_HOME_STEPS + 12, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FF4D4D',
-      onNext: () => runVersionStep(23)
-    });
-  },
-
-  // Step 22 – Reactivate button
-  async function step22() {
-    const modalOverlay = document.getElementById('result-modal');
-    if (modalOverlay) modalOverlay.classList.add('active'); // Ensure it stays open
-    await new Promise(r => setTimeout(r, 100));
-    const btn = document.getElementById('result-btn');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هتعيد خطوات تفعيل اللعبة تاني',
-      en: 'it will retry the activation again',
-      step: TOTAL_HOME_STEPS + 13, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FF4D4D',
-      onNext: () => runVersionStep(24)
-    });
-  },
-
-  // Step 23 – Close button
-  async function step23() {
-    const modalOverlay = document.getElementById('result-modal');
-    if (modalOverlay) modalOverlay.classList.add('active'); // Ensure it stays open
-    await new Promise(r => setTimeout(r, 100));
-    const btn = document.querySelector('#result-modal .btn-close');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هيقفل الاداة',
-      en: 'it will close the tool',
-      step: TOTAL_HOME_STEPS + 14, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#FF4D4D',
-      onNext: () => {
-        if (modalOverlay) modalOverlay.classList.remove('active');
-        runVersionStep(25);
-      }
-    });
-  },
-
-  // Step 24 – Success popup
-  async function step24() {
-    if (typeof window.showSuccess === 'function') window.showSuccess();
-    await new Promise(r => setTimeout(r, 200));
-    const modal = document.querySelector('#result-modal .modal');
-    showSpotlight(modal, 10);
-    showTooltip({
-      ar: 'تم التفعيل بنجاح',
-      en: 'successfully activated',
-      step: TOTAL_HOME_STEPS + 15, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runVersionStep(26)
-    });
-  },
-
-  // Step 25 – Return To Home button
-  async function step25() {
-    const modalOverlay = document.getElementById('result-modal');
-    if (modalOverlay) modalOverlay.classList.add('active'); // Ensure it stays open
-    await new Promise(r => setTimeout(r, 100));
-    const btn = document.getElementById('result-btn');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'العودة لصفحة الهوم',
-      en: 'return to home page',
-      step: TOTAL_HOME_STEPS + 16, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      onNext: () => runVersionStep(27)
-    });
-  },
-
-  // Step 26 – Close button
-  async function step26() {
-    const modalOverlay = document.getElementById('result-modal');
-    if (modalOverlay) modalOverlay.classList.add('active'); // Ensure it stays open
-    await new Promise(r => setTimeout(r, 100));
-    const btn = document.querySelector('#result-modal .btn-close');
-    showSpotlight(btn, 6);
-    showTooltip({
-      ar: 'هتقفلك الاداة',
-      en: 'closes the tool',
-      step: TOTAL_HOME_STEPS + 17, total: TOTAL_VERSION_STEPS + TOTAL_HOME_STEPS,
-      color: '#7CFFE1',
-      nextLabel: 'إنهاء الجولة ✓',
-      onNext: () => {
-        if (modalOverlay) modalOverlay.classList.remove('active');
-        endTour();
-        window.location.href = 'home_page_v2.html?tour_done=1';
-      }
-    });
-  }
-];
-const TOTAL_VERSION_STEPS = VERSION_STEPS.length;
-
-function runVersionStep(n) {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-  setStep(n);
-  const idx = n - TOTAL_HOME_STEPS - 1;
-  VERSION_STEPS[idx]?.();
-}
-
-// ───────────────────────── Fake Activation Demo ─────────────
-async function runFakeActivation(container, onDone) {
-  const fill = document.getElementById('progress-fill');
-  const pct  = document.getElementById('progress-pct');
-  const txt  = document.getElementById('progress-text-content');
-  if (!fill || !pct || !txt) { onDone(); return; }
-
-  // Disable next button during demo
-  const nextBtn = document.getElementById('ta-tour-next');
-  if (nextBtn) nextBtn.disabled = true;
-
-  const stages = [
-    { p:  5, en: 'Connecting to server...', ar: 'جارٍ الاتصال بالخادم...' },
-    { p: 15, en: 'Authenticating session...', ar: 'جارٍ التحقق من الجلسة...' },
-    { p: 28, en: 'Fetching patch manifest...', ar: 'جارٍ تجهيز قائمة الملفات...' },
-    { p: 42, en: 'Downloading patch files...', ar: 'جارٍ تنزيل ملفات التفعيل...' },
-    { p: 58, en: 'Downloading patch files...', ar: 'جارٍ تنزيل ملفات التفعيل...' },
-    { p: 72, en: 'Verifying integrity...', ar: 'جارٍ التحقق من الملفات...' },
-    { p: 85, en: 'Applying activation patch...', ar: 'جارٍ تطبيق التفعيل...' },
-    { p: 95, en: 'Writing configuration...', ar: 'جارٍ حفظ الإعدادات...' },
-    { p:100, en: 'Done! ✓', ar: 'اكتمل ✓' },
-  ];
-
-  for (const s of stages) {
-    fill.style.width = s.p + '%';
-    fill.style.transition = 'width 0.5s ease';
-    pct.textContent = s.p + '%';
-    txt.textContent = currentLanguage() === 'ar' ? s.ar : s.en;
-    await new Promise(r => setTimeout(r, 520));
+  if (typeof target.scrollIntoView === 'function') {
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  await new Promise(r => setTimeout(r, 600));
-  fill.style.width = '0%';
-  pct.textContent  = '0%';
-  txt.textContent  = currentLanguage() === 'ar' ? 'جارٍ التهيئة' : 'Initializing';
+  // Update SVG spotlight cutout
+  const rect = target.getBoundingClientRect();
+  const cutout = document.getElementById('tour-spotlight-cutout');
+  const pad = 8;
 
-  if (nextBtn) nextBtn.disabled = false;
-  onDone();
-}
+  if (cutout) {
+    cutout.setAttribute('x', String(Math.max(0, rect.left - pad)));
+    cutout.setAttribute('y', String(Math.max(0, rect.top - pad)));
+    cutout.setAttribute('width', String(rect.width + pad * 2));
+    cutout.setAttribute('height', String(rect.height + pad * 2));
+  }
 
-// ───────────────────────── Tour Done Banner ─────────────────
-function showTourDone() {
-  const banner = document.createElement('div');
-  Object.assign(banner.style, {
-    position: 'fixed', bottom: '28px', left: '50%', transform: 'translateX(-50%) translateY(60px)',
-    background: 'linear-gradient(90deg,#7CFFE1,#A855F7)',
-    borderRadius: '50px', padding: '12px 24px',
-    fontFamily: "'Inter',sans-serif", fontWeight: '700', fontSize: '13px', color: '#04140f',
-    boxShadow: '0 4px 28px rgba(124,255,225,0.5)', zIndex: '99999',
-    transition: 'transform 0.4s cubic-bezier(.34,1.56,.64,1)',
-    whiteSpace: 'nowrap',
-  });
-  banner.textContent = t('tour.done');
-  document.body.appendChild(banner);
-  requestAnimationFrame(() => {
-    banner.style.transform = 'translateX(-50%) translateY(0)';
-  });
-  setTimeout(() => {
-    banner.style.transform = 'translateX(-50%) translateY(80px)';
-    banner.style.opacity = '0';
-    setTimeout(() => banner.remove(), 400);
-  }, 3500);
-}
+  if (!tourTooltipElement) return;
 
-// ───────────────────────── Public API ───────────────────────
-export function startTour() {
-  buildOverlay();
-  setStep(1);
-  runHomeStep(1);
-}
+  // Render Tooltip Card safely using DOM nodes
+  tourTooltipElement.replaceChildren();
 
-export function resumeTourIfActive() {
-  const step = getStep();
-  if (step < 1) return false;
+  // 1. Header (Title + Close Button)
+  const header = document.createElement('div');
+  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
 
-  buildOverlay();
+  const title = document.createElement('h4');
+  title.style.cssText = 'margin: 0; font-size: 14px; font-weight: 700; color: var(--teal-1, #8CFFF0);';
+  title.textContent = t(step.titleKey) !== step.titleKey ? t(step.titleKey) : step.defaultTitle;
 
-  const isHome = window.location.pathname.includes('home_page_v2');
-  if (isHome) {
-    if (step <= TOTAL_HOME_STEPS) {
-      setTimeout(() => runHomeStep(step), 600);
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', t('tour.skip') || 'Skip');
+  closeBtn.style.cssText = 'background: transparent; border: none; color: #A6A4B8; cursor: pointer; font-size: 16px; padding: 2px 6px;';
+  closeBtn.textContent = '✕';
+  closeBtn.onclick = () => endTour();
+
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+
+  // 2. Body Description
+  const desc = document.createElement('p');
+  desc.style.cssText = 'margin: 0 0 14px 0; line-height: 1.5; color: #E0DFE8; font-size: 12px;';
+  desc.textContent = t(step.descKey) !== step.descKey ? t(step.descKey) : step.defaultDesc;
+
+  // 3. Footer (Progress Counter + Buttons)
+  const footer = document.createElement('div');
+  footer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;';
+
+  const counter = document.createElement('span');
+  counter.style.cssText = 'font-size: 11px; color: #8A889A; font-family: monospace;';
+  counter.textContent = `${index + 1} / ${steps.length}`;
+
+  const btnGroup = document.createElement('div');
+  btnGroup.style.cssText = 'display: flex; gap: 8px;';
+
+  // Previous button (if not first step)
+  if (index > 0) {
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.style.cssText = 'background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); color: #F5F5F7; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer;';
+    prevBtn.textContent = t('tour.prev') || 'السابق | Previous';
+    prevBtn.onclick = () => renderStep(steps, index - 1);
+    btnGroup.appendChild(prevBtn);
+  }
+
+  // Next / Finish button
+  const isLast = index === steps.length - 1;
+  const nextBtn = document.createElement('button');
+  nextBtn.type = 'button';
+  nextBtn.style.cssText = 'background: linear-gradient(90deg, #0E6B5C, #18A991); border: 1px solid var(--teal-1, #8CFFF0); color: #FFF; border-radius: 6px; padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer;';
+  nextBtn.textContent = isLast
+    ? (t('tour.finish') || 'إنهاء | Finish')
+    : (t('tour.next') || 'التالي | Next');
+
+  nextBtn.onclick = () => {
+    if (isLast) {
+      endTour();
     } else {
-      // Should not be here, but if so, redirect to version page
-      window.location.href = 'version_page_v2.html';
+      renderStep(steps, index + 1);
     }
-  } else {
-    if (step > TOTAL_HOME_STEPS) {
-      setTimeout(() => runVersionStep(step), 600);
-    } else {
-      // Should not be here, but if so, redirect to home page
-      window.location.href = 'home_page_v2.html';
+  };
+  btnGroup.appendChild(nextBtn);
+
+  footer.appendChild(counter);
+  footer.appendChild(btnGroup);
+
+  tourTooltipElement.appendChild(header);
+  tourTooltipElement.appendChild(desc);
+  tourTooltipElement.appendChild(footer);
+
+  // Position tooltip
+  positionTooltip(rect, tourTooltipElement);
+
+  // Save tour progress state for cross-page navigation
+  try {
+    sessionStorage.setItem('ta_tour_step', String(index));
+  } catch {}
+}
+
+/**
+ * Starts the onboarding tour sequence from the beginning or specified step.
+ * @param {Array} [steps=DEFAULT_TOUR_STEPS] 
+ * @param {number} [startStep=0] 
+ */
+export function startTour(steps = DEFAULT_TOUR_STEPS, startStep = 0) {
+  endTour();
+  createTourDOM();
+
+  try {
+    sessionStorage.setItem('ta_tour_active', '1');
+    sessionStorage.setItem('ta_tour_step', String(startStep));
+  } catch {}
+
+  keyListener = (e) => {
+    if (e.key === 'Escape') {
+      endTour();
+    }
+  };
+  resizeListener = () => {
+    renderStep(steps, activeStepIndex);
+  };
+
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('keydown', keyListener);
+    window.addEventListener('resize', resizeListener, { passive: true });
+  }
+
+  renderStep(steps, startStep);
+}
+
+/**
+ * Resumes active tour if the user navigated across pages while the tour was running.
+ */
+export function resumeTourIfActive(steps = DEFAULT_TOUR_STEPS) {
+  try {
+    if (sessionStorage.getItem('ta_tour_active') === '1') {
+      const savedStep = parseInt(sessionStorage.getItem('ta_tour_step') || '0', 10);
+      startTour(steps, isNaN(savedStep) ? 0 : savedStep);
+    }
+  } catch {}
+}
+
+/**
+ * Cleanly terminates the tour, removes DOM elements, and detaches listeners.
+ */
+export function endTour() {
+  if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+    if (keyListener) {
+      window.removeEventListener('keydown', keyListener);
+      keyListener = null;
+    }
+    if (resizeListener) {
+      window.removeEventListener('resize', resizeListener);
+      resizeListener = null;
     }
   }
-  return true;
+
+  destroyTourDOM();
+
+  try {
+    sessionStorage.setItem('ta_tour_active', '0');
+    sessionStorage.setItem('ta_tour_done', '1');
+  } catch {}
 }
-window.showTourDone = showTourDone;

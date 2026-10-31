@@ -1,16 +1,15 @@
 {
-  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
   "productName": "TechnoAfandi-FC",
-  "version": "1.2.18",
+  "version": "1.2.20",
   "identifier": "com.technoafandi.fc26tool",
   "build": {
-    "frontendDist": "../dist",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npx vite",
-    "beforeBuildCommand": "npx vite build"
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
   },
   "app": {
-    "withGlobalTauri": true,
     "windows": [
       {
         "title": "TechnoAfandi - FC",
@@ -21,58 +20,30 @@
         "minHeight": 680,
         "resizable": true,
         "decorations": false,
-        "center": true,
-        "transparent": true
+        "transparent": true,
+        "center": true
       }
     ],
     "security": {
-      "csp": {
-        "default-src": "'self' asset: http://asset.localhost",
-        "base-uri": "'self'",
-        "object-src": "'none'",
-        "frame-src": "'none'",
-        "script-src": "'self'",
-        "style-src": "'self' 'unsafe-inline'",
-        "img-src": "'self' asset: http://asset.localhost data: blob:",
-        "font-src": "'self' asset: http://asset.localhost data:",
-        "connect-src": "ipc: http://ipc.localhost"
-      },
-      "devCsp": {
-        "default-src": "'self' asset: http://asset.localhost",
-        "base-uri": "'self'",
-        "object-src": "'none'",
-        "frame-src": "'none'",
-        "script-src": "'self' http://localhost:1420",
-        "style-src": "'self' 'unsafe-inline' http://localhost:1420",
-        "img-src": "'self' asset: http://asset.localhost data: blob:",
-        "font-src": "'self' asset: http://asset.localhost data: http://localhost:1420",
-        "connect-src": "ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420"
-      }
-    }
-  },
-  "plugins": {
-    "updater": {
-      "windows": {
-        "installMode": "quiet"
-      },
-      "endpoints": [
-        "https://github.com/lilmoneam44/TechnoAfandi/releases/latest/download/latest.json"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgxM0U2MUU2ODhERDVDQ0EKUldUS1hOMkk1bUUrZ2E2bkVpcS8rRGlkQXQ0dHlpa3l6cFhrUnFQNks3NnlieC9FTVhjaGZLQW4K"
+      "csp": null
     }
   },
   "bundle": {
     "active": true,
     "targets": ["nsis", "msi"],
-    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "publisher": "TechnoAfandi",
-    "shortDescription": "TechnoAfandi FC Activation Tool"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/lilmoneam44/TechnoAfandi/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

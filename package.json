@@ -1,16 +1,14 @@
 {
   "name": "techno-afandi-tool",
-  "version": "1.2.18",
-  "description": "Techno Afandi FC27 Tool",
+  "private": true,
+  "version": "1.2.20",
   "type": "module",
+  "description": "Techno Afandi FC27 Tool",
   "scripts": {
-    "tauri": "tauri",
     "dev": "vite",
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.12.1",
-    "vite": "^7.3.6"
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@fontsource/chakra-petch": "^5.3.0",
@@ -18,5 +16,9 @@
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/noto-sans-arabic": "^5.3.0",
     "@tauri-apps/plugin-updater": "^2.13.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.1",
+    "vite": "^7.3.6"
   }
 }

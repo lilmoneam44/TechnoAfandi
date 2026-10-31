@@ -1,183 +1,242 @@
-function dispatchAction(element, event) {
-  const action = element.dataset.action;
-  const handler = window[action];
-  if (typeof handler !== 'function') return;
-  if (element.matches('a[href]')) event?.preventDefault();
+/**
+ * @file ui.js
+ * @description Secure Action Registry, accessible modal focus controller, and event delegator for Techno Afandi FC27 Tool.
+ * Eliminates arbitrary window reflection, traps keyboard focus, and manages Escape key dialog teardown.
+ */
 
-  let result;
-  if (action === 'openExternal') result = handler(element.href);
-  else if (action === 'selectMode' || action === 'selectModeModal') result = handler(element.dataset.mode);
-  else if (action === 'selectCancelChoice') result = handler(element.dataset.choice);
-  else if (action === 'closeModal') result = handler(element.dataset.target);
-  else result = handler();
+// Centralized Action Registry: All valid actions must be explicitly registered
+const ACTION_REGISTRY = new Map();
 
-  if (result && typeof result.catch === 'function') result.catch((error) => console.error(error));
+// Track previous active element for focus restoration
+let lastFocusedElement = null;
+
+/**
+ * Registers an action handler in the Action Registry.
+ * @param {string} actionName 
+ * @param {(element: HTMLElement, event: Event) => void} handler 
+ */
+export function registerAction(actionName, handler) {
+  if (typeof actionName !== 'string' || typeof handler !== 'function') {
+    console.error(`[UI Registry] Invalid action registration for "${actionName}"`);
+    return;
+  }
+  ACTION_REGISTRY.set(actionName, handler);
 }
 
-document.addEventListener('click', (event) => {
-  const element = event.target.closest('[data-action]');
-  if (!element || element.disabled) return;
-  dispatchAction(element, event);
-});
-
-document.querySelectorAll('.modal-overlay').forEach((dialog) => {
-  const heading = dialog.querySelector('.title, h1, h2');
-  if (!dialog.hasAttribute('role')) dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-modal', 'true');
-  if (!dialog.hasAttribute('tabindex')) dialog.tabIndex = -1;
-  if (heading) {
-    if (!heading.id) heading.id = `${dialog.id || 'modal'}-title`;
-    dialog.setAttribute('aria-labelledby', heading.id);
+/**
+ * Registers multiple actions at once.
+ * @param {Record<string, (element: HTMLElement, event: Event) => void>} actionMap 
+ */
+export function registerActions(actionMap) {
+  if (!actionMap || typeof actionMap !== 'object') return;
+  for (const [name, handler] of Object.entries(actionMap)) {
+    registerAction(name, handler);
   }
-  dialog.setAttribute('aria-hidden', String(!dialog.classList.contains('active')));
-});
+}
 
-let activeDialog = null;
-let returnFocus = null;
+/**
+ * Dispatches an action by name from the registry.
+ * Completely eliminates arbitrary `window[action]` reflection.
+ * @param {string} action 
+ * @param {HTMLElement} element 
+ * @param {Event} event 
+ */
+export function dispatchAction(action, element, event) {
+  if (!action) return;
 
-function syncActiveDialog() {
-  const next = [...document.querySelectorAll('.modal-overlay.active')].at(-1) || null;
-  document.querySelectorAll('.modal-overlay').forEach((dialog) => {
-    dialog.setAttribute('aria-hidden', String(dialog !== next));
+  const handler = ACTION_REGISTRY.get(action);
+  if (handler) {
+    try {
+      handler(element, event);
+    } catch (err) {
+      console.error(`[UI Action] Error executing "${action}":`, err);
+    }
+  } else {
+    console.warn(`[UI Action Blocked] Unregistered or unknown action "${action}" triggered by`, element);
+  }
+}
+
+/**
+ * Common default actions pre-registered for the application
+ */
+function registerDefaultActions() {
+  // 1. Modal close action
+  registerAction('closeModal', (element) => {
+    const modalId = element.dataset.modal || element.closest('.modal-overlay, .modal-backdrop, [role="dialog"]')?.id;
+    if (modalId) {
+      closeDialog(modalId);
+    } else {
+      const parentModal = element.closest('.modal-overlay, .modal-backdrop, [role="dialog"]');
+      if (parentModal) {
+        parentModal.classList.remove('active');
+        restoreFocus();
+      }
+    }
   });
-  if (next === activeDialog) return;
 
-  if (next) {
-    if (!activeDialog) returnFocus = document.activeElement;
-    activeDialog = next;
-    queueMicrotask(() => {
-      if (activeDialog !== next) return;
-      const first = [...next.querySelectorAll(
-        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )].find((element) => element.getClientRects().length > 0);
-      (first || next.querySelector('[aria-labelledby]'))?.focus?.({ preventScroll: true });
+  // 2. External URL opener
+  registerAction('openExternal', (element) => {
+    const url = element.dataset.url || element.getAttribute('href');
+    if (!url) return;
+
+    if (typeof window !== 'undefined' && window.__TAURI__?.opener?.openUrl) {
+      window.__TAURI__.opener.openUrl(url).catch((err) => {
+        console.error('[UI] Failed to open URL via Tauri opener:', err);
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    } else if (typeof window !== 'undefined' && window.__TAURI__?.core?.invoke) {
+      window.__TAURI__.core.invoke('open_url', { url }).catch(() => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  });
+
+  // 3. Language toggle bridge
+  registerAction('toggleLanguage', () => {
+    if (typeof window !== 'undefined' && typeof window.toggleLanguage === 'function') {
+      window.toggleLanguage();
+    }
+  });
+}
+
+/**
+ * Opens a modal dialog with accessibility focus management.
+ * @param {string|HTMLElement} modalOrId 
+ */
+export function openDialog(modalOrId) {
+  const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+  if (!modal) return;
+
+  lastFocusedElement = document.activeElement;
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+
+  // Focus the first focusable element inside the modal
+  requestAnimationFrame(() => {
+    const focusable = modal.querySelector(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable) {
+      focusable.focus();
+    } else {
+      modal.setAttribute('tabindex', '-1');
+      modal.focus();
+    }
+  });
+}
+
+/**
+ * Closes a modal dialog and restores focus to previous element.
+ * @param {string|HTMLElement} modalOrId 
+ */
+export function closeDialog(modalOrId) {
+  const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+  if (!modal) return;
+
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  restoreFocus();
+}
+
+/**
+ * Restores keyboard focus to the element that was focused before opening the dialog.
+ */
+function restoreFocus() {
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    try {
+      lastFocusedElement.focus();
+    } catch {}
+    lastFocusedElement = null;
+  }
+}
+
+/**
+ * Keyboard trap and Escape listener
+ * @param {KeyboardEvent} event 
+ */
+function handleKeyDown(event) {
+  const activeModal = document.querySelector('.modal-overlay.active, .modal-backdrop.active, [role="dialog"].active');
+  if (!activeModal) return;
+
+  // Escape key closes top modal
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    const closeBtn = activeModal.querySelector('[data-action="closeModal"], [data-action="cancelModal"], .modal-close');
+    if (closeBtn) {
+      closeBtn.click();
+    } else {
+      closeDialog(activeModal);
+    }
+    return;
+  }
+
+  // Focus trap inside active modal
+  if (event.key === 'Tab') {
+    const focusables = Array.from(
+      activeModal.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+    if (!focusables.length) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (event.shiftKey) {
+      if (document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  }
+}
+
+/**
+ * Image fallback handler
+ */
+function setupImageFallbacks() {
+  document.querySelectorAll('img[data-logo-fallback]').forEach((img) => {
+    img.addEventListener('error', () => {
+      if (img.dataset.hasFailedFallback) return;
+      img.dataset.hasFailedFallback = 'true';
+      img.src = img.dataset.fallbackSrc || 'logo.png';
     });
-    return;
-  }
-
-  activeDialog = null;
-  if (returnFocus instanceof HTMLElement && returnFocus.isConnected && !returnFocus.matches(':disabled')) {
-    returnFocus.focus({ preventScroll: true });
-  }
-  returnFocus = null;
-}
-
-new MutationObserver((records) => {
-  if (records.some((record) => record.target.matches('.modal-overlay'))) syncActiveDialog();
-}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
-syncActiveDialog();
-
-document.addEventListener('keydown', (event) => {
-  const modeOption = event.target.closest('.mode-option[role="radio"][data-mode]');
-  if (modeOption && typeof window.handleModeOptionKey === 'function') {
-    window.handleModeOptionKey(event, modeOption.dataset.mode, Boolean(modeOption.closest('#mode-warning-modal')));
-    return;
-  }
-
-  const cancelOption = event.target.closest('#cancel-modal .choice-option[data-choice]');
-  if (cancelOption && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
-    event.preventDefault();
-    const options = [...document.querySelectorAll('#cancel-modal .choice-option[data-choice]')];
-    const index = options.indexOf(cancelOption);
-    const delta = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1;
-    const next = options[(index + delta + options.length) % options.length];
-    next.focus();
-    dispatchAction(next, event);
-    return;
-  }
-  if (cancelOption && ['Enter', ' ', 'Spacebar'].includes(event.key)) {
-    event.preventDefault();
-    dispatchAction(cancelOption, event);
-    return;
-  }
-
-  if (activeDialog && event.key === 'Escape') {
-    if (activeDialog.id === 'error-modal' && !document.getElementById('btn-cancel-scan')?.hidden) {
-      event.preventDefault();
-      window.cancelGameScan?.();
-      return;
-    }
-    const escapeActions = {
-      'startup-modal': () => window.closeStartupModal?.(),
-      'mode-warning-modal': () => window.closeModal?.('mode-warning-modal'),
-      'error-modal': () => window.closeModal?.('error-modal'),
-      'update-modal': () => window.continueToVersionSkippingUpdate?.(),
-      'path-confirm-modal': () => window.closeModal?.('path-confirm-modal'),
-      'path-success-modal': () => window.closeModal?.('path-success-modal'),
-      'result-modal': () => window.closeResultModal?.(),
-    };
-    if (activeDialog.id === 'cancel-modal' && !activeDialog.classList.contains('cancelling')) {
-      event.preventDefault();
-      window.selectCancelChoice?.('resume');
-      window.submitCancelChoice?.();
-      return;
-    }
-    if (escapeActions[activeDialog.id]) {
-      event.preventDefault();
-      const result = escapeActions[activeDialog.id]();
-      if (result && typeof result.catch === 'function') result.catch((error) => console.error(error));
-      return;
-    }
-  }
-
-  if (!activeDialog || event.key !== 'Tab') return;
-  const focusable = [...activeDialog.querySelectorAll(
-    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  )].filter((element) => element.getClientRects().length > 0);
-  if (!focusable.length) {
-    event.preventDefault();
-    activeDialog.focus();
-    return;
-  }
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || !activeDialog.contains(document.activeElement))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (document.activeElement === last || !activeDialog.contains(document.activeElement))) {
-    event.preventDefault();
-    first.focus();
-  }
-});
-
-function updateCancelChoiceState() {
-  const options = [...document.querySelectorAll('#cancel-modal .choice-option[data-choice]')];
-  options.forEach((option) => {
-    const selected = option.classList.contains('selected');
-    option.setAttribute('aria-checked', String(selected));
-    option.tabIndex = selected ? 0 : -1;
   });
 }
 
-document.addEventListener('click', (event) => {
-  if (event.target.closest('#cancel-modal .choice-option[data-choice]')) {
-    queueMicrotask(updateCancelChoiceState);
-  }
-});
-updateCancelChoiceState();
+/**
+ * Global initialization
+ */
+export function initUI() {
+  registerDefaultActions();
 
-document.querySelectorAll('img[data-logo-fallback]').forEach((image) => {
-  image.addEventListener('error', () => {
-    if (image.dataset.logoFallback === 'used') {
-      image.hidden = true;
-      return;
+  document.addEventListener('click', (event) => {
+    const actionEl = event.target.closest('[data-action]');
+    if (actionEl) {
+      const action = actionEl.dataset.action;
+      dispatchAction(action, actionEl, event);
     }
-    image.dataset.logoFallback = 'used';
-    const sourceFile = location.pathname.toLowerCase().includes('/src/');
-    image.src = new URL(sourceFile ? '../public/logo.png' : 'logo.png', location.href).href;
   });
-});
 
-const particles = document.getElementById('particles');
-if (particles && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const positions = [12, 22, 35, 48, 58, 68, 78, 88, 15, 62, 42, 82];
-  positions.forEach((left, index) => {
-    const particle = document.createElement('div');
-    particle.className = `particle ${index % 2 ? 'purple' : 'teal'}`;
-    particle.style.left = `${left}%`;
-    particle.style.bottom = '0px';
-    particle.style.animationDelay = `${(index * 1.2) % 5.5}s`;
-    particle.style.animationDuration = `${6.2 + (index % 7) * 0.25}s`;
-    particles.appendChild(particle);
-  });
+  document.addEventListener('keydown', handleKeyDown);
+  setupImageFallbacks();
+}
+
+// Auto-run if loaded in browser
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUI);
+  } else {
+    initUI();
+  }
 }
