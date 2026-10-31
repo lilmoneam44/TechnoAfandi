@@ -2,7 +2,8 @@
  * @file home.js
  * @description Production-grade home controller for Techno Afandi FC27 Tool.
  * Features: Unique operation IDs for scan cancellation, requestAnimationFrame progress debouncing,
- * keyboard accessible mode selection, explicit Action Registry registration, and quick-launch support.
+ * keyboard-accessible mode selection, explicit Action Registry registration, Quick Launch,
+ * interactive Path Status Bar, and Diagnostics Center.
  */
 
 import { registerActions, openDialog, closeDialog } from './ui.js';
@@ -33,12 +34,13 @@ async function tauriInvoke(cmd, args = {}) {
   return null;
 }
 
-// --- Action Registry Implementation (Explicitly registering all home page actions) ---
+// --- Action Registry Implementation ---
 registerActions({
   toggleLanguage() {
     if (typeof window.toggleLanguage === 'function') {
       window.toggleLanguage();
     }
+    refreshPathAndLaunchState().catch(() => {});
   },
 
   selectMode(element) {
@@ -105,6 +107,14 @@ registerActions({
 
   quickLaunch() {
     handleQuickLaunch();
+  },
+
+  openDiagnostics() {
+    handleOpenDiagnostics();
+  },
+
+  copyDiagnostics() {
+    handleCopyDiagnostics();
   }
 });
 
@@ -113,9 +123,7 @@ function handleSelectMode(mode) {
   selectedMode = mode;
   setLastSelectedMode(mode).catch(() => {});
 
-  const modeGroup = document.querySelector('.mode-group, [role="radiogroup"]');
   const options = document.querySelectorAll('.mode-option, [role="radio"]');
-
   options.forEach((opt) => {
     const isSelected = opt.dataset.mode === mode;
     opt.classList.toggle('selected', isSelected);
@@ -128,13 +136,15 @@ function handleSelectMode(mode) {
     launchBtn.removeAttribute('disabled');
     launchBtn.classList.add('ready');
   }
+
+  refreshPathAndLaunchState().catch(() => {});
 }
 
 /**
  * Keyboard navigation between radio mode options (Left/Right, Up/Down).
  */
 function setupModeKeyboardNav() {
-  const modeGroup = document.querySelector('.mode-group, [role="radiogroup"]');
+  const modeGroup = document.querySelector('.mode-group, [role="radiogroup"], .modes');
   if (!modeGroup) return;
 
   modeGroup.addEventListener('keydown', (e) => {
@@ -166,7 +176,6 @@ export async function autoLocateGame() {
   gameScanCancelRequested = false;
   const thisScanSessionId = ++currentScanSessionId;
 
-  // UI status update
   const scanModal = document.getElementById('game-scan-modal') || document.getElementById('startup-modal');
   if (scanModal) openDialog(scanModal);
 
@@ -174,11 +183,9 @@ export async function autoLocateGame() {
   if (statusLabel) statusLabel.textContent = t('home.locate.scanning');
 
   try {
-    // Setup debounced listener for Tauri scan events
     const tauri = getTauri();
     if (tauri?.event?.listen) {
       await tauri.event.listen('game-scan-progress', (event) => {
-        // Discard stale events from canceled or expired sessions
         if (thisScanSessionId !== currentScanSessionId || gameScanCancelRequested) {
           return;
         }
@@ -188,7 +195,6 @@ export async function autoLocateGame() {
 
     const detectedPath = await tauriInvoke('auto_locate_game');
 
-    // Terminal state verification: check if cancelled during backend operation
     if (thisScanSessionId !== currentScanSessionId || gameScanCancelRequested) {
       console.log(`[GameScan] Discarded result from canceled session #${thisScanSessionId}`);
       return;
@@ -197,6 +203,7 @@ export async function autoLocateGame() {
     if (detectedPath && typeof detectedPath === 'string') {
       exeDir = detectedPath;
       await setGamePath(detectedPath);
+      await refreshPathAndLaunchState();
       showPathSuccess(detectedPath);
     } else {
       showPathNotFound();
@@ -213,9 +220,6 @@ export async function autoLocateGame() {
   }
 }
 
-/**
- * Debounces rapid backend progress events via requestAnimationFrame.
- */
 function bufferScanProgress(payload) {
   pendingProgressPayload = payload;
   if (!progressFrameHandle && typeof requestAnimationFrame !== 'undefined') {
@@ -244,14 +248,11 @@ function renderScanProgress(payload) {
   }
 }
 
-/**
- * Cancels active game scan with session invalidation.
- */
 export function cancelGameScan() {
   if (!autoLocateInProgress || gameScanCancelRequested) return;
 
   gameScanCancelRequested = true;
-  currentScanSessionId++; // Invalidate active session immediately
+  currentScanSessionId++;
   autoLocateInProgress = false;
 
   const statusLabel = document.getElementById('scan-status-text') || document.querySelector('.scan-status');
@@ -264,7 +265,7 @@ export function cancelGameScan() {
   }, 400);
 }
 
-// --- Folder Browsing & Validation ---
+// --- Folder Browsing, Quick Paths, & Status Bar Updates ---
 async function handleBrowseFolder() {
   const tauri = getTauri();
   let selected = null;
@@ -272,7 +273,6 @@ async function handleBrowseFolder() {
   if (tauri?.dialog?.open) {
     selected = await tauri.dialog.open({ directory: true, multiple: false, title: t('btn.browse') });
   } else {
-    // Check common default install paths as intelligent suggestion
     const defaultPaths = [
       'C:\\Program Files\\EA Games\\EA SPORTS FC 27',
       'C:\\Program Files (x86)\\Origin Games\\EA SPORTS FC 27',
@@ -286,11 +286,48 @@ async function handleBrowseFolder() {
     if (isValid) {
       exeDir = selected;
       await setGamePath(selected);
+      await refreshPathAndLaunchState();
       showPathSuccess(selected);
     } else {
       showPathError(selected);
     }
   }
+}
+
+export async function refreshPathAndLaunchState() {
+  const pathBar = document.getElementById('path-status-bar');
+  const pathVal = document.getElementById('path-status-val');
+  const pathIcon = document.getElementById('path-status-icon');
+  const quickBtn = document.getElementById('btn-quick-launch');
+
+  exeDir = await getGamePath();
+  const cachedMode = await getLastSelectedMode();
+
+  if (exeDir) {
+    const isValid = await tauriInvoke('check_game_folder', { exeDir });
+    if (isValid) {
+      if (pathBar) {
+        pathBar.classList.add('valid');
+        pathBar.classList.remove('invalid');
+      }
+      if (pathVal) pathVal.textContent = exeDir;
+      if (pathIcon) pathIcon.className = 'ti ti-folder-check';
+
+      if (cachedMode && quickBtn) {
+        quickBtn.style.display = 'inline-flex';
+      }
+      return true;
+    }
+  }
+
+  if (pathBar) {
+    pathBar.classList.remove('valid');
+    pathBar.classList.add('invalid');
+  }
+  if (pathVal) pathVal.textContent = t('home.path.unselected');
+  if (pathIcon) pathIcon.className = 'ti ti-folder-search';
+  if (quickBtn) quickBtn.style.display = 'none';
+  return false;
 }
 
 function showPathSuccess(path) {
@@ -301,7 +338,7 @@ function showPathSuccess(path) {
 
 function showPathError(path) {
   const errPath = document.getElementById('error-path-text');
-  if (errPath) errPath = path;
+  if (errPath) errPath.textContent = path;
   openDialog('game-error-modal');
 }
 
@@ -312,6 +349,7 @@ function showPathNotFound() {
 function handleConfirmSavePath() {
   closeDialog('path-success-modal');
   closeDialog('path-confirm-modal');
+  refreshPathAndLaunchState().catch(() => {});
 }
 
 // --- Launch Sequence & Quick Launch ---
@@ -321,7 +359,6 @@ export async function continueToVersion() {
     return;
   }
 
-  // Ensure game path is available
   if (!exeDir) {
     exeDir = await getGamePath();
   }
@@ -331,10 +368,9 @@ export async function continueToVersion() {
     return;
   }
 
-  // Validate folder before proceeding
   const isValid = await tauriInvoke('check_game_folder', { exeDir });
   if (isValid === false) {
-    openDialog('game-error-modal');
+    showPathError(exeDir);
     return;
   }
 
@@ -354,7 +390,6 @@ async function handleQuickLaunch() {
       return;
     }
   }
-  // Fallback to normal flow if quick launch prerequisites aren't ready
   continueToVersion();
 }
 
@@ -376,7 +411,54 @@ function closeStartupModal() {
 async function handlePerformUpdate() {
   const updateStatus = document.getElementById('update-status');
   if (updateStatus) updateStatus.textContent = t('progress.downloading', { file: 'Update', percent: '0', speed: '' });
-  // Invoke updater if plugin present
+}
+
+// --- Diagnostics Center ---
+async function handleOpenDiagnostics() {
+  const currentPath = exeDir || (await getGamePath()) || '';
+  if (!currentPath) {
+    showPathNotFound();
+    return;
+  }
+
+  try {
+    const diag = await tauriInvoke('get_folder_diagnostics', { exeDir: currentPath });
+    const pEl = document.getElementById('diag-path-val');
+    const dbEl = document.getElementById('diag-dbdata-val');
+    const xmlEl = document.getElementById('diag-xml-val');
+    const countEl = document.getElementById('diag-entries-count');
+
+    if (pEl) pEl.textContent = currentPath;
+    if (dbEl) {
+      dbEl.textContent = diag?.dbdata_found ? '✓ متوفر (Found)' : '✗ مفقود (Missing)';
+      dbEl.style.color = diag?.dbdata_found ? 'var(--teal-1)' : 'var(--red-1)';
+    }
+    if (xmlEl) {
+      xmlEl.textContent = diag?.installer_found ? '✓ متوفر (Found)' : '✗ مفقود (Missing)';
+      xmlEl.style.color = diag?.installer_found ? 'var(--teal-1)' : 'var(--red-1)';
+    }
+    if (countEl && diag?.top_level_entries) {
+      countEl.textContent = `${diag.top_level_entries.length} ملفات / مجلدات مفحوصة`;
+    }
+
+    openDialog('diagnostics-modal');
+  } catch (err) {
+    console.error('[Diagnostics] Failed to collect diagnostics:', err);
+  }
+}
+
+function handleCopyDiagnostics() {
+  const pEl = document.getElementById('diag-path-val')?.textContent || '';
+  const dbEl = document.getElementById('diag-dbdata-val')?.textContent || '';
+  const xmlEl = document.getElementById('diag-xml-val')?.textContent || '';
+
+  const report = `=== Techno Afandi FC27 Diagnostics ===\nPath: ${pEl}\ndbdata.dll: ${dbEl}\nInstaller: ${xmlEl}\nDate: ${new Date().toISOString()}\n`;
+
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(report).then(() => {
+      alert('تم نسخ تقرير الفحص بنجاح! | Diagnostics copied to clipboard.');
+    });
+  }
 }
 
 // --- App Initialization Lifecycle ---
@@ -384,16 +466,12 @@ window.addEventListener('load', async () => {
   initI18n();
   setupModeKeyboardNav();
 
-  // Restore cached mode and game path if previously saved
   const cachedMode = await getLastSelectedMode();
   if (cachedMode) handleSelectMode(cachedMode);
 
-  exeDir = await getGamePath();
-
-  // Check if guided tour should resume
+  await refreshPathAndLaunchState();
   resumeTourIfActive();
 
-  // Show welcome startup dialog on first run
   try {
     if (sessionStorage.getItem('ta_startup_seen') !== '1') {
       const startup = document.getElementById('startup-modal');

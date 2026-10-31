@@ -43,6 +43,15 @@ export const dictionary = {
   'btn.skip_update': { ar: 'تخطي التحديث', en: 'Skip Update' },
 
   // Game Scan & Path Detection
+  "home.path.title": { ar: "مسار اللعبة:", en: "Game Folder:" },
+  "home.path.unselected": { ar: "لم يتم تحديد المسار (انقر للتحديد)", en: "No folder selected (click to browse)" },
+  "home.path.invalid": { ar: "مسار غير صالح - انقر للتصحيح", en: "Invalid folder - click to correct" },
+  "btn.diagnostics": { ar: "تشخيص ملفات اللعبة", en: "Diagnostics" },
+  "diag.title": { ar: "فحص وتشخيص ملفات اللعبة", en: "Game Installation Diagnostics" },
+  "diag.path": { ar: "المسار المحدد:", en: "Selected Path:" },
+  "diag.dbdata": { ar: "ملف dbdata.dll:", en: "dbdata.dll File:" },
+  "diag.xml": { ar: "بيانات التثبيت (XML):", en: "Installer Data (XML):" },
+  "diag.copy": { ar: "نسخ تقرير الفحص", en: "Copy Report" },
   'home.locate.scanning': { ar: 'جاري فحص الأقراص بحثاً عن مجلد اللعبة...', en: 'Scanning local drives for FC 27...' },
   'home.locate.cancelling': { ar: 'جاري إلغاء عملية الفحص...', en: 'Cancelling drive scan...' },
   'home.locate.cancelled': { ar: 'تم إلغاء عملية الفحص.', en: 'Drive scan cancelled.' },

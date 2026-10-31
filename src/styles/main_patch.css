@@ -90,3 +90,125 @@ html[lang="en"] {
   font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
 }
+
+/* 6. Interactive Path Status Bar */
+.path-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(22, 22, 28, 0.75);
+  border: 1px solid rgba(140, 255, 240, 0.18);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.path-status-bar:hover {
+  border-color: var(--teal-1);
+  background: rgba(22, 22, 28, 0.92);
+}
+
+.path-status-bar .path-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-1);
+  font-size: 18px;
+}
+
+.path-status-bar .path-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: inherit;
+}
+
+.path-status-bar .path-status-title {
+  font-size: 11px;
+  color: var(--slate);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.path-status-bar .path-status-val {
+  font-size: 12px;
+  color: #FFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.path-status-bar.valid .path-icon-wrap {
+  color: var(--teal-1);
+}
+
+.path-status-bar.invalid {
+  border-color: rgba(255, 77, 77, 0.4);
+}
+
+.path-status-bar.invalid .path-icon-wrap {
+  color: var(--red-1);
+}
+
+/* 7. Launch Actions Group & Quick Launch Button */
+.launch-actions-wrap {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.launch-actions-wrap .btn-start {
+  flex: 1;
+}
+
+.btn-quick-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #106B5C 0%, #158F7B 100%);
+  border: 1.5px solid var(--teal-1);
+  color: #FFF;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 107, 92, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-quick-launch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 255, 225, 0.45);
+}
+
+.btn-quick-launch:active {
+  transform: translateY(0);
+}
+
+/* 8. Diagnostics Badge & Button */
+.btn-diagnostics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--purple-1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-diagnostics-badge:hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: var(--purple-1);
+}
