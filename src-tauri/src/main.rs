@@ -3,9 +3,9 @@
 //! Features: Lossless UTF-8 path handling, case-insensitive discovery, bounded diagnostics,
 //! and session-scoped scan cancellation.
 
+use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use serde::{Deserialize, Serialize};
 
 // Global synchronization flags
 static SCAN_SESSION_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -42,9 +42,9 @@ pub fn get_exe_dir() -> Result<String, String> {
         .parent()
         .ok_or_else(|| "Failed to resolve parent directory of executable".to_string())?;
 
-    let path_str = exe_dir
-        .to_str()
-        .ok_or_else(|| "Executable path contains non-UTF-8 characters that cannot be represented".to_string())?;
+    let path_str = exe_dir.to_str().ok_or_else(|| {
+        "Executable path contains non-UTF-8 characters that cannot be represented".to_string()
+    })?;
 
     // Strip extended Windows UNC prefix if present
     let clean_path = path_str.strip_prefix(r"\\?\").unwrap_or(path_str);
@@ -149,7 +149,9 @@ fn find_installer_dir_case_insensitive(base: &Path) -> Option<PathBuf> {
                 if ft.is_dir() {
                     let name = entry.file_name();
                     let name_str = name.to_string_lossy();
-                    if name_str.eq_ignore_ascii_case("__installer") || name_str.eq_ignore_ascii_case("_installer") {
+                    if name_str.eq_ignore_ascii_case("__installer")
+                        || name_str.eq_ignore_ascii_case("_installer")
+                    {
                         return Some(entry.path());
                     }
                 }
