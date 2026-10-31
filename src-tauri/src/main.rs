@@ -610,10 +610,10 @@ fn check_registry_for_game() -> Option<String> {
                 if line.contains("InstallPath") && line.contains("REG_SZ") {
                     if let Some(idx) = line.find("REG_SZ") {
                         let steam_path = line[idx + 6..].trim();
-                        let FC27_path =
+                        let fc27_path =
                             format!(r"{}\steamapps\common\EA SPORTS FC 27", steam_path);
-                        if is_game_folder(std::path::Path::new(&FC27_path)) {
-                            return Some(FC27_path);
+                        if is_game_folder(std::path::Path::new(&fc27_path)) {
+                            return Some(fc27_path);
                         }
                     }
                 }
