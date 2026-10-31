@@ -105,9 +105,14 @@ fn get_folder_diagnostics(exe_dir: String) -> FolderDiagnostics {
     entries.sort();
     entries.truncate(50);
 
-    let installer_found = ["__Installer", "_installer", "_Installer", "__installer"]
-        .iter()
-        .any(|name| base.join(name).is_dir())
+    let installer_found = [
+        "__Installer",
+        "_installer",
+        "_Installer",
+        "__installer",
+    ]
+    .iter()
+    .any(|name| base.join(name).is_dir())
         || find_installer_dir_case_insensitive(&base).is_some();
 
     FolderDiagnostics {
@@ -254,7 +259,9 @@ fn open_url(url: String) -> Result<(), String> {
 
 fn is_managed_download_url(url: &str) -> bool {
     url.starts_with("https://raw.githubusercontent.com/lilmoneam44/TechnoAfandi/")
-        || url.starts_with("https://media.githubusercontent.com/media/lilmoneam44/TechnoAfandi/")
+        || url.starts_with(
+            "https://media.githubusercontent.com/media/lilmoneam44/TechnoAfandi/",
+        )
         || url.starts_with("https://github.com/lilmoneam44/TechnoAfandi/releases/download/")
 }
 
@@ -603,7 +610,8 @@ fn check_registry_for_game() -> Option<String> {
                 if line.contains("InstallPath") && line.contains("REG_SZ") {
                     if let Some(idx) = line.find("REG_SZ") {
                         let steam_path = line[idx + 6..].trim();
-                        let FC27_path = format!(r"{}\steamapps\common\EA SPORTS FC 27", steam_path);
+                        let FC27_path =
+                            format!(r"{}\steamapps\common\EA SPORTS FC 27", steam_path);
                         if is_game_folder(std::path::Path::new(&FC27_path)) {
                             return Some(FC27_path);
                         }
@@ -625,7 +633,10 @@ fn check_common_paths() -> Option<String> {
     for drive in &drives {
         let drive_paths = [
             format!(r"{}Program Files\EA Games\EA SPORTS FC 27", drive),
-            format!(r"{}Program Files (x86)\Origin Games\EA SPORTS FC 27", drive),
+            format!(
+                r"{}Program Files (x86)\Origin Games\EA SPORTS FC 27",
+                drive
+            ),
             format!(
                 r"{}Program Files (x86)\Steam\steamapps\common\EA SPORTS FC 27",
                 drive
@@ -835,6 +846,8 @@ fn main() {
             exit_app,
         ])
         .setup(|app| {
+            logger::init_logger(app.handle());
+
             if let Some(window) = app.get_webview_window("main") {
                 let w = window.clone();
                 let _ = w.set_always_on_top(true);
