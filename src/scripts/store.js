@@ -1,16 +1,16 @@
 /**
  * @file store.js
  * @description Production-grade configuration and settings store for Techno Afandi FC27 Tool.
- * Compatible with Tauri v2 @tauri-apps/plugin-store with robust in-memory/localStorage fallback,
- * mutex-guarded initialization, and explicit error propagation.
+ * Uses persistent local webview storage with mutex-guarded initialization, input validation,
+ * and explicit error propagation. Avoids uninstalled package dependencies so Vite/Rollup builds cleanly.
  */
 
 let storeInstance = null;
 let storeInitPromise = null;
-const SETTINGS_FILE = 'settings.json';
+const SETTINGS_KEY_PREFIX = 'ta_cfg_';
 
 /**
- * Safely resolves or initializes the Tauri v2 Store instance.
+ * Resolves the active storage adapter.
  * Uses a promise lock to prevent concurrent initialization race conditions.
  * @returns {Promise<any>}
  */
@@ -25,33 +25,18 @@ export async function getStore() {
 
   storeInitPromise = (async () => {
     try {
-      // 1. Try global Tauri v2 namespace
+      // 1. If Tauri store is injected globally at runtime, use it
       if (typeof window !== 'undefined' && window.__TAURI__?.store?.load) {
-        storeInstance = await window.__TAURI__.store.load(SETTINGS_FILE, { autoSave: true });
-        return storeInstance;
-      }
-
-      // 2. Try ES module import if bundler environment supports it
-      try {
-        const tauriStorePlugin = await import('@tauri-apps/plugin-store');
-        if (typeof tauriStorePlugin.load === 'function') {
-          storeInstance = await tauriStorePlugin.load(SETTINGS_FILE, { autoSave: true });
+        try {
+          storeInstance = await window.__TAURI__.store.load('settings.json', { autoSave: true });
           return storeInstance;
-        } else if (typeof tauriStorePlugin.Store === 'function') {
-          const store = new tauriStorePlugin.Store(SETTINGS_FILE);
-          storeInstance = store;
-          return storeInstance;
+        } catch (e) {
+          console.warn('[Store] Global Tauri store.load failed, falling back to WebStorage:', e);
         }
-      } catch {
-        // Module not found or running in test/browser environment
       }
 
-      // 3. Fallback to resilient WebStorage adapter
-      storeInstance = createWebStorageAdapter();
-      return storeInstance;
-    } catch (err) {
-      console.warn('[Store] Initializing Tauri store failed, falling back to WebStorage adapter:', err);
-      storeInstance = createWebStorageAdapter();
+      // 2. Persistent WebStorage adapter (native to WebView2 on Windows, persists across restarts)
+      storeInstance = createPersistentStorageAdapter();
       return storeInstance;
     } finally {
       storeInitPromise = null;
@@ -62,42 +47,48 @@ export async function getStore() {
 }
 
 /**
- * Resilient WebStorage (localStorage) adapter implementing the Tauri v2 Store contract.
+ * Robust persistent storage adapter implementing standard asynchronous store contract.
  */
-function createWebStorageAdapter() {
+function createPersistentStorageAdapter() {
   return {
     async get(key) {
       if (typeof key !== 'string' || !key.trim()) return null;
       try {
-        const raw = localStorage.getItem(`ta_cfg_${key}`);
+        if (typeof localStorage === 'undefined') return null;
+        const raw = localStorage.getItem(`${SETTINGS_KEY_PREFIX}${key.trim()}`);
         return raw !== null ? JSON.parse(raw) : null;
       } catch (err) {
         console.error(`[StoreAdapter] Error reading key "${key}":`, err);
         return null;
       }
     },
+
     async set(key, value) {
       if (typeof key !== 'string' || !key.trim()) {
-        throw new Error('[StoreAdapter] Invalid setting key');
+        throw new Error('[StoreAdapter] Key must be a non-empty string');
       }
       try {
-        localStorage.setItem(`ta_cfg_${key}`, JSON.stringify(value));
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(`${SETTINGS_KEY_PREFIX}${key.trim()}`, JSON.stringify(value));
       } catch (err) {
         console.error(`[StoreAdapter] Error persisting key "${key}":`, err);
-        throw new Error(`Failed to persist key "${key}" to local storage: ${err.message}`);
+        throw new Error(`Failed to persist key "${key}": ${err.message || String(err)}`);
       }
     },
+
     async delete(key) {
       if (typeof key !== 'string' || !key.trim()) return;
       try {
-        localStorage.removeItem(`ta_cfg_${key}`);
+        if (typeof localStorage === 'undefined') return;
+        localStorage.removeItem(`${SETTINGS_KEY_PREFIX}${key.trim()}`);
       } catch (err) {
         console.error(`[StoreAdapter] Error deleting key "${key}":`, err);
-        throw new Error(`Failed to delete key "${key}": ${err.message}`);
+        throw new Error(`Failed to delete key "${key}": ${err.message || String(err)}`);
       }
     },
+
     async save() {
-      // localStorage writes synchronously
+      // WebStorage writes synchronously to local disk
       return true;
     }
   };
@@ -181,8 +172,7 @@ export async function setGamePath(path) {
   if (typeof path !== 'string' || !path.trim()) {
     return { success: false, error: 'Invalid game path: path cannot be empty.' };
   }
-  const cleanPath = path.trim();
-  return setSetting('gamePath', cleanPath);
+  return setSetting('gamePath', path.trim());
 }
 
 /**
