@@ -835,7 +835,6 @@ fn main() {
             exit_app,
         ])
         .setup(|app| {
-
             if let Some(window) = app.get_webview_window("main") {
                 let w = window.clone();
                 let _ = w.set_always_on_top(true);
