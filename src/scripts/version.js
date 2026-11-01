@@ -184,15 +184,27 @@ function handleActivationFinish(result) {
   isPaused = false;
   updateControlsState();
 
-  const resultTitle = document.getElementById('result-title');
-  const resultMessage = document.getElementById('result-message');
+  const resultTitle = document.getElementById('result-modal-title') || document.getElementById('result-title');
+  const resultMessage = document.getElementById('result-modal-msg') || document.getElementById('result-message');
+  const resultCard = document.getElementById('result-card');
+  const resultIcon = document.getElementById('result-badge-icon');
 
   if (result?.success) {
-    if (resultTitle) resultTitle.textContent = t('progress.completed');
-    if (resultMessage) resultMessage.textContent = t('app.status.ready');
+    if (resultCard) resultCard.className = 'modal-card modal-success';
+    if (resultIcon) {
+      resultIcon.className = 'modal-badge-icon success-icon';
+      resultIcon.textContent = '✓';
+    }
+    if (resultTitle) resultTitle.textContent = t('progress.completed') || 'تمت العملية بنجاح!';
+    if (resultMessage) resultMessage.textContent = 'تم تفعيل وتجهيز مودات FC 27 بنجاح تام. اللعبة جاهزة للتشغيل الآن!';
   } else {
-    if (resultTitle) resultTitle.textContent = t('modal.error.title');
-    if (resultMessage) resultMessage.textContent = result?.message || t('error.general');
+    if (resultCard) resultCard.className = 'modal-card modal-error';
+    if (resultIcon) {
+      resultIcon.className = 'modal-badge-icon error-icon';
+      resultIcon.textContent = '❌';
+    }
+    if (resultTitle) resultTitle.textContent = t('modal.error.title') || 'فشل في عملية التفعيل';
+    if (resultMessage) resultMessage.textContent = result?.message || t('error.general') || 'تعذر إتمام عملية التفعيل. يرجى التحقق من مجلد اللعبة وإعادة المحاولة.';
   }
 
   openDialog('result-modal');

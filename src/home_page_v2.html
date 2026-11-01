@@ -172,71 +172,255 @@
       </div>
     </footer>
   </main>
+<!-- ======================================================== -->
+  <!-- LEGENDARY POPUPS COLLECTION (EA SPORTS FC RETOUCHED)    -->
+  <!-- ======================================================== -->
 
-  <!-- Diagnostics Modal -->
-  <div class="modal-overlay" id="diagnostics-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+  <!-- 1. Welcome Startup Popup (Green / EA Brand) -->
+  <div class="modal-overlay" id="startup-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-welcome">
       <div class="modal-header">
-        <h3 data-i18n="diag.title">فحص وتشخيص ملفات اللعبة</h3>
-        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+        <div class="modal-header-title">
+          <span class="modal-badge-icon welcome-icon">⚽</span>
+          <h3 data-i18n="home.welcome.title">مرحباً بك في أداة تكنو أفندي FC 27</h3>
+        </div>
+        <button class="modal-close" data-action="closeStartupModal" aria-label="إغلاق">✕</button>
       </div>
-      <div class="modal-body" style="font-size:12px;color:var(--text-muted);">
-        <div style="margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span style="font-weight:600;display:block;margin-bottom:2px;" data-i18n="diag.path">المسار المحدد:</span>
-          <span id="diag-path-val" style="font-family:'JetBrains Mono',monospace;color:#FFF;word-break:break-all;">...</span>
+      <div class="modal-body">
+        <div class="modal-feature-banner">
+          <div class="feature-tag">EA SPORTS FC™ 27</div>
+          <p data-i18n="home.welcome.desc">أداة احترافية تتيح لك تشغيل المودات وتعديل وتفعيل لعبة EA SPORTS FC 27 بسلاسة وسرعة فائقة. يمكنك أخذ جولة تعريفية أو البدء فوراً.</p>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span data-i18n="diag.dbdata">ملف dbdata.dll:</span>
-          <span id="diag-dbdata-val" style="font-weight:700;">...</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span data-i18n="diag.xml">بيانات التثبيت (XML):</span>
-          <span id="diag-xml-val" style="font-weight:700;">...</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span>الملفات المفحوصة:</span>
-          <span id="diag-entries-count">...</span>
+        <div class="modal-perks-list">
+          <div class="perk-item"><span class="perk-dot">●</span> دعم FIFA Mod Manager (FMM) لتركيب الأطقم والوجوه والجرافيكس.</div>
+          <div class="perk-item"><span class="perk-dot">●</span> دعم Live Editor لتعديل الطاقات وقيم الذاكرة أثناء المباراة.</div>
+          <div class="perk-item"><span class="perk-dot">●</span> حماية وتفعيل تلقائي متوافق مع كافة التحديثات.</div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="global-lang-toggle" data-action="copyDiagnostics" data-i18n="diag.copy">نسخ التقرير</button>
+        <button class="global-lang-toggle" data-action="startTourFromWelcome" data-i18n="tour.start">جولة تعريفية</button>
+        <button class="btn-primary-action modal-btn-main" data-action="closeStartupModal" data-i18n="btn.continue">البدء فوراً</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Yellow Warning Popup: Mode Selection Required (الصفراء) -->
+  <div class="modal-overlay" id="mode-warning-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-warning">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-badge-icon warning-icon">⚠️</span>
+          <h3 data-i18n="mode.warning.title">تنبيه اختيار النمط</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-highlight-text warning-text" data-i18n="mode.warning.desc">يرجى اختيار نمط التشغيل أولاً (FMM أو Live Editor) للمتابعة إلى التفعيل.</p>
+        <div class="modal-quick-modes">
+          <div class="modal-quick-mode-btn" role="button" tabindex="0" data-action="selectModeModal" data-mode="FMM">
+            <span class="quick-mode-icon">🎮</span>
+            <div class="quick-mode-meta">
+              <span class="quick-mode-title">FMM – FIFA Mod Manager</span>
+              <span class="quick-mode-desc">تشغيل الأطقم والوجوه والمودات المخصصة</span>
+            </div>
+            <span class="quick-mode-badge">اختر FMM</span>
+          </div>
+          <div class="modal-quick-mode-btn" role="button" tabindex="0" data-action="selectModeModal" data-mode="Live Editor">
+            <span class="quick-mode-icon">⚡</span>
+            <div class="quick-mode-meta">
+              <span class="quick-mode-title">Live Editor Mode</span>
+              <span class="quick-mode-desc">تعديل خواص اللاعبين والذاكرة في الوقت الفعلي</span>
+            </div>
+            <span class="quick-mode-badge live-quick-badge">اختر Live Editor</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.close">إغلاق</button>
+        <button class="btn-primary-action modal-btn-warning" data-action="submitMode" data-i18n="btn.continue">تأكيد واختيار</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Red Error Popup: Game Folder Invalid (الحمراء) -->
+  <div class="modal-overlay" id="game-error-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-error">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-badge-icon error-icon">❌</span>
+          <h3 data-i18n="modal.error.title">خطأ في مسار مجلد اللعبة</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-highlight-text error-text" data-i18n="modal.error.desc">لم يتم العثور على ملفات FC 27 الصالحة في المجلد المحدد. تأكد من اختيار المجلد الصحيح الذي يحتوي على ملف اللعبة التنفيذي.</p>
+        <div class="modal-path-display error-path-box">
+          <span class="path-display-label">المسار المفحوص:</span>
+          <span id="error-path-text" class="path-display-val">...</span>
+        </div>
+        <div class="modal-tips-box">
+          <span class="tips-title">💡 نصيحة للحل:</span>
+          <span class="tips-body">تأكد من مجلد تثبيت اللعبة على Steam أو EA App (عادة في C:\Program Files\EA Games أو SteamLibrary).</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="global-lang-toggle" data-action="autoLocateGame" data-i18n="btn.auto_locate">فحص تلقائي</button>
+        <button class="btn-primary-action modal-btn-error" data-action="selectGameFolder" data-i18n="btn.browse">تحديد المجلد يدوياً</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Update Popup (بتاعت التحديث) -->
+  <div class="modal-overlay" id="update-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-update">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-badge-icon update-icon">⚡</span>
+          <h3 data-i18n="modal.update.title">تحديث جديد متوفر للأداة!</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="update-version-banner">
+          <span class="current-v">الإصدار الحالي: <strong>v1.2.20</strong></span>
+          <span class="arrow-v">←</span>
+          <span class="new-v">الإصدار الجديد: <strong>v1.2.24 PRO</strong></span>
+        </div>
+        <p data-i18n="modal.update.desc">يتوفر إصدار جديد من أداة تكنو أفندي يتضمن تحسينات للأداء والتوافق مع آخر تحديثات اللعبة وموداتها.</p>
+        <div class="update-changelog-card">
+          <span class="changelog-title" data-i18n="modal.update.changelog">أبرز مميزات التحديث:</span>
+          <ul class="changelog-items">
+            <li>✓ دعم كامل لتحديثات FC 27 ومودات Live Editor الأخيرة.</li>
+            <li>✓ تسريع الفحص التلقائي وتفعيل المودات بدون أخطاء.</li>
+            <li>✓ واجهة مبهرة جديدة بالكامل مع أصول بصرية فائقة الجودة.</li>
+          </ul>
+        </div>
+        <div id="update-progress-wrap" style="display:none;margin-top:10px;">
+          <div id="update-status" style="font-size:11px;color:var(--cyan-1);margin-bottom:4px;">جاري التحميل...</div>
+          <div style="height:6px;background:var(--pitch-surface-raised);border-radius:3px;overflow:hidden;border:1px solid var(--pitch-border);">
+            <div id="update-progress-fill" style="width:0%;height:100%;background:var(--cyan-1);transition:width 0.2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="global-lang-toggle" data-action="continueToVersionSkippingUpdate" data-i18n="btn.skip_update">تخطي الآن</button>
+        <button class="btn-primary-action modal-btn-cyan" data-action="doUpdate" data-i18n="btn.update">تحديث الآن</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Path Success Popup (النجاح) -->
+  <div class="modal-overlay" id="path-success-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-success">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-badge-icon success-icon">✓</span>
+          <h3 data-i18n="modal.path_success.title">تم التحقق من مجلد اللعبة بنجاح!</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-highlight-text success-text" data-i18n="modal.path_success.desc">تم العثور على ملفات اللعبة والملفات المساعدة بنجاح. يمكنك الآن المتابعة للتشغيل.</p>
+        <div class="modal-path-display success-path-box">
+          <span class="path-display-label">المسار المعتمد:</span>
+          <span id="detected-path-text" class="path-display-val">...</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary-action modal-btn-main" data-action="confirmSavePath" data-i18n="btn.continue">متابعة وحفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Path Confirm / Manual Prompt Popup (فولدر اللعبة) -->
+  <div class="modal-overlay" id="path-confirm-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-folder">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-badge-icon folder-icon">📁</span>
+          <h3 data-i18n="modal.path_confirm.title">تحديد مجلد تثبيت FC 27</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body">
+        <p data-i18n="modal.path_confirm.desc">لم يتم العثور على اللعبة في المسارات الافتراضية. يرجى البحث التلقائي عبر الأقراص أو تحديد المجلد يدوياً.</p>
+        <div class="modal-folder-actions">
+          <div class="modal-folder-btn" role="button" tabindex="0" data-action="autoLocateGame">
+            <span class="folder-btn-icon">🔍</span>
+            <div class="folder-btn-meta">
+              <span class="folder-btn-title" data-i18n="btn.auto_locate">البحث التلقائي في الأقراص</span>
+              <span class="folder-btn-desc">فحص جميع أقراص C:, D:, E: تلقائياً</span>
+            </div>
+          </div>
+          <div class="modal-folder-btn" role="button" tabindex="0" data-action="selectGameFolder">
+            <span class="folder-btn-icon">📂</span>
+            <div class="folder-btn-meta">
+              <span class="folder-btn-title" data-i18n="btn.browse">تحديد المجلد يدوياً</span>
+              <span class="folder-btn-desc">اختر مجلد EA SPORTS FC 27 من جهازك</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
         <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.close">إغلاق</button>
       </div>
     </div>
   </div>
 
-  <!-- Startup Modal -->
-  <div class="modal-overlay" id="startup-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+  <!-- 7. Game Scan Live Progress Modal (فحص الأقراص) -->
+  <div class="modal-overlay" id="game-scan-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-scan">
       <div class="modal-header">
-        <h3 data-i18n="home.welcome.title">مرحباً بك في أداة تكنو أفندي FC 27</h3>
+        <div class="modal-header-title">
+          <span class="modal-badge-icon scan-icon">🔍</span>
+          <h3 data-i18n="modal.scan.title">البحث التلقائي عن مسار اللعبة</h3>
+        </div>
+        <button class="modal-close" data-action="cancelGameScan" aria-label="إلغاء">✕</button>
       </div>
       <div class="modal-body">
-        <p data-i18n="home.welcome.desc">تتيح لك الأداة تشغيل المودات وتفعيل EA SPORTS FC 27 بسلاسة تامة. يمكنك بدء جولة تعريفية سريعة أو البدء فوراً.</p>
+        <div id="scan-status-text" class="scan-status" data-i18n="home.locate.scanning">جاري فحص الأقراص بحثاً عن مجلد اللعبة...</div>
+        <div class="scan-bar-track">
+          <div id="scan-progress-fill" class="scan-bar-fill"></div>
+        </div>
+        <div class="scan-count-meta">المجلدات المفحوصة: <span id="scan-count">0</span></div>
       </div>
       <div class="modal-footer">
-        <button class="global-lang-toggle" data-action="startTourFromWelcome" data-i18n="tour.start">جولة تعريفية</button>
-        <button class="btn-primary-action" style="padding:6px 14px;font-size:12px;" data-action="closeStartupModal" data-i18n="btn.continue">البدء فوراً</button>
+        <button class="global-lang-toggle" id="btn-cancel-scan" data-action="cancelGameScan" data-i18n="btn.cancel">إلغاء الفحص</button>
       </div>
     </div>
   </div>
 
-  <!-- Game Scan / Location Modal -->
-  <div class="modal-overlay" id="game-scan-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+  <!-- 8. Diagnostics Modal (تشخيص ملفات اللعبة) -->
+  <div class="modal-overlay" id="diagnostics-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-diag">
       <div class="modal-header">
-        <h3 data-i18n="modal.scan.title">البحث التلقائي عن مسار اللعبة</h3>
-        <button class="modal-close" data-action="cancelGameScan" aria-label="إلغاء">✕</button>
+        <div class="modal-header-title">
+          <span class="modal-badge-icon diag-icon">📊</span>
+          <h3 data-i18n="diag.title">فحص وتشخيص ملفات اللعبة</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
       </div>
       <div class="modal-body">
-        <div id="scan-status-text" class="scan-status" style="margin-bottom:12px;font-weight:600;color:var(--ea-green);" data-i18n="home.locate.scanning">جاري فحص الأقراص بحثاً عن مجلد اللعبة...</div>
-        <div style="height:6px;background:var(--pitch-surface-raised);border-radius:3px;overflow:hidden;border:1px solid var(--pitch-border);margin-bottom:12px;">
-          <div id="scan-progress-fill" style="width:0%;height:100%;background:var(--ea-green);transition:width 0.2s ease;"></div>
+        <div class="diag-item-box">
+          <span class="diag-label" data-i18n="diag.path">المسار المحدد:</span>
+          <span id="diag-path-val" class="diag-val">...</span>
         </div>
-        <div style="font-size:11px;color:var(--text-muted);">المجلدات المفحوصة: <span id="scan-count" style="font-family:'JetBrains Mono',monospace;color:#FFF;">0</span></div>
+        <div class="diag-row-box">
+          <span data-i18n="diag.dbdata">ملف dbdata.dll:</span>
+          <span id="diag-dbdata-val" class="diag-status-badge">...</span>
+        </div>
+        <div class="diag-row-box">
+          <span data-i18n="diag.xml">بيانات التثبيت (XML):</span>
+          <span id="diag-xml-val" class="diag-status-badge">...</span>
+        </div>
+        <div class="diag-row-box">
+          <span>الملفات المفحوصة:</span>
+          <span id="diag-entries-count" class="diag-count-badge">...</span>
+        </div>
       </div>
       <div class="modal-footer">
-        <button class="global-lang-toggle" id="btn-cancel-scan" data-action="cancelGameScan" data-i18n="btn.cancel">إلغاء الفحص</button>
+        <button class="global-lang-toggle" data-action="copyDiagnostics" data-i18n="diag.copy">نسخ التقرير</button>
+        <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.close">إغلاق</button>
       </div>
     </div>
   </div>

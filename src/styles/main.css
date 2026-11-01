@@ -777,3 +777,455 @@ html[dir="ltr"] .btn-primary-action:hover .btn-arrow {
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* ======================================================== */
+/* RETOUCHED POPUPS & MODALS DESIGN SYSTEM (EA SPORTS FC)    */
+/* ======================================================== */
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 8, 0.86);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: #0E1218;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-badge-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* 1. Yellow Warning Popup (.modal-warning) */
+.modal-warning {
+  border: 1.5px solid rgba(255, 184, 0, 0.45) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 28px rgba(255, 184, 0, 0.18) !important;
+}
+
+.modal-warning .modal-badge-icon {
+  background: rgba(255, 184, 0, 0.15);
+  border: 1px solid rgba(255, 184, 0, 0.35);
+  color: #FFB800;
+}
+
+.modal-warning .modal-header h3 {
+  color: #FFD700 !important;
+}
+
+.modal-btn-warning {
+  background: #FFB800 !important;
+  color: #080A0C !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(255, 184, 0, 0.35) !important;
+}
+
+.modal-btn-warning:hover {
+  background: #FFCC33 !important;
+  box-shadow: 0 6px 22px rgba(255, 184, 0, 0.5) !important;
+}
+
+.modal-quick-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.modal-quick-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 184, 0, 0.05);
+  border: 1px solid rgba(255, 184, 0, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-quick-mode-btn:hover {
+  border-color: #FFB800;
+  background: rgba(255, 184, 0, 0.14);
+  transform: translateY(-1px);
+}
+
+.quick-mode-icon {
+  font-size: 16px;
+}
+
+.quick-mode-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: inherit;
+}
+
+.quick-mode-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.quick-mode-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.quick-mode-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 184, 0, 0.18);
+  color: #FFB800;
+  border: 1px solid rgba(255, 184, 0, 0.35);
+}
+
+.live-quick-badge {
+  background: rgba(56, 239, 255, 0.18);
+  color: var(--cyan-1);
+  border-color: rgba(56, 239, 255, 0.35);
+}
+
+/* 2. Red Error Popup (.modal-error) */
+.modal-error {
+  border: 1.5px solid rgba(255, 59, 48, 0.5) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 28px rgba(255, 59, 48, 0.22) !important;
+}
+
+.modal-error .modal-badge-icon {
+  background: rgba(255, 59, 48, 0.15);
+  border: 1px solid rgba(255, 59, 48, 0.35);
+  color: #FF4D4D;
+}
+
+.modal-error .modal-header h3 {
+  color: #FF4D4D !important;
+}
+
+.modal-btn-error {
+  background: #FF3B30 !important;
+  color: #FFF !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.4) !important;
+}
+
+.modal-btn-error:hover {
+  background: #FF5247 !important;
+  box-shadow: 0 6px 22px rgba(255, 59, 48, 0.55) !important;
+}
+
+.error-path-box {
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 10px 0;
+}
+
+.modal-tips-box {
+  background: var(--pitch-surface);
+  border: 1px solid var(--pitch-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.tips-title {
+  font-weight: 700;
+  color: var(--match-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tips-body {
+  color: var(--text-muted);
+}
+
+/* 3. Green Success & Welcome Popups (.modal-success, .modal-welcome) */
+.modal-success, .modal-welcome {
+  border: 1.5px solid rgba(0, 255, 135, 0.45) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 28px rgba(0, 255, 135, 0.22) !important;
+}
+
+.modal-success .modal-badge-icon, .modal-welcome .modal-badge-icon {
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.35);
+  color: #00FF87;
+}
+
+.modal-success .modal-header h3, .modal-welcome .modal-header h3 {
+  color: #00FF87 !important;
+}
+
+.success-path-box {
+  background: rgba(0, 255, 135, 0.08);
+  border: 1px solid rgba(0, 255, 135, 0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 10px 0;
+}
+
+.modal-feature-banner {
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.08) 0%, rgba(56, 239, 255, 0.04) 100%);
+  border: 1px solid rgba(0, 255, 135, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.feature-tag {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ea-green);
+  margin-bottom: 4px;
+}
+
+.modal-perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-main);
+}
+
+.perk-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.perk-dot {
+  color: var(--ea-green);
+  font-size: 8px;
+}
+
+/* 4. Cyan Update & Folder Popups (.modal-update, .modal-folder, .modal-scan) */
+.modal-update, .modal-folder, .modal-scan {
+  border: 1.5px solid rgba(56, 239, 255, 0.45) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 28px rgba(56, 239, 255, 0.2) !important;
+}
+
+.modal-update .modal-badge-icon, .modal-folder .modal-badge-icon, .modal-scan .modal-badge-icon {
+  background: rgba(56, 239, 255, 0.15);
+  border: 1px solid rgba(56, 239, 255, 0.35);
+  color: #38EFFF;
+}
+
+.modal-update .modal-header h3, .modal-folder .modal-header h3, .modal-scan .modal-header h3 {
+  color: #38EFFF !important;
+}
+
+.update-version-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(56, 239, 255, 0.08);
+  border: 1px solid rgba(56, 239, 255, 0.25);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.update-changelog-card {
+  background: var(--pitch-surface);
+  border: 1px solid var(--pitch-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+
+.changelog-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan-1);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.changelog-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.modal-btn-cyan {
+  background: #38EFFF !important;
+  color: #080A0C !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(56, 239, 255, 0.35) !important;
+}
+
+.modal-folder-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.modal-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--pitch-surface);
+  border: 1px solid var(--pitch-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-folder-btn:hover {
+  border-color: var(--cyan-1);
+  background: var(--pitch-surface-hover);
+  transform: translateY(-1px);
+}
+
+.folder-btn-icon {
+  font-size: 18px;
+}
+
+.folder-btn-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: inherit;
+}
+
+.folder-btn-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.folder-btn-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.scan-status {
+  font-weight: 700;
+  color: var(--cyan-1);
+  margin-bottom: 10px;
+}
+
+.scan-bar-track {
+  height: 8px;
+  background: var(--pitch-surface-raised);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--pitch-border);
+  margin-bottom: 8px;
+}
+
+.scan-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--ea-green) 0%, var(--cyan-1) 100%);
+  transition: width 0.2s ease;
+}
+
+.scan-count-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.scan-count-meta span {
+  font-family: 'JetBrains Mono', monospace;
+  color: #FFF;
+  font-weight: 700;
+}
+
+/* Diagnostics modal cards */
+.diag-item-box {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: var(--pitch-surface);
+  border-radius: 6px;
+  border: 1px solid var(--pitch-border-subtle);
+}
+
+.diag-label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.diag-val {
+  font-family: 'JetBrains Mono', monospace;
+  color: #FFF;
+  word-break: break-all;
+  font-size: 11px;
+}
+
+.diag-row-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  background: var(--pitch-surface);
+  border-radius: 6px;
+  border: 1px solid var(--pitch-border-subtle);
+  font-size: 11px;
+}
+
+.diag-status-badge {
+  font-weight: 700;
+  color: var(--ea-green);
+}
+
+.diag-count-badge {
+  font-family: 'JetBrains Mono', monospace;
+  color: #FFF;
+}

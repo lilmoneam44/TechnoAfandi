@@ -94,35 +94,42 @@
       </div>
     </footer>
   </main>
-
-  <!-- Cancel Confirmation Modal -->
+<!-- 9. Cancel Confirmation Modal (تأكيد الإلغاء) -->
   <div class="modal-overlay" id="cancel-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+    <div class="modal-card modal-warning">
       <div class="modal-header">
-        <h3 data-i18n="modal.cancel.confirm">تأكيد إلغاء العملية</h3>
+        <div class="modal-header-title">
+          <span class="modal-badge-icon warning-icon">⚠️</span>
+          <h3 data-i18n="modal.cancel.confirm">تأكيد إلغاء العملية</h3>
+        </div>
+        <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
       </div>
       <div class="modal-body">
-        <p>هل أنت متأكد من رغبتك في إيقاف عملية التفعيل وإلغاء الإجراء الجاري؟</p>
+        <p class="modal-highlight-text warning-text">هل أنت متأكد من رغبتك في إيقاف عملية التفعيل وإلغاء الإجراء الجاري؟</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">قد يتطلب استئناف العملية لاحقاً إعادة فحص وتجهيز ملفات المودات من البداية.</p>
       </div>
       <div class="modal-footer">
-        <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.resume">استمرار</button>
-        <button class="btn-primary-action" style="background:var(--error-red);color:#FFF;padding:6px 14px;font-size:12px;" data-action="submitCancelChoice" data-choice="abort" data-i18n="btn.cancel">نعم، إلغاء</button>
+        <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.resume">استمرار التفعيل</button>
+        <button class="btn-primary-action modal-btn-error" data-action="submitCancelChoice" data-choice="abort" data-i18n="btn.cancel">نعم، إلغاء العملية</button>
       </div>
     </div>
   </div>
 
-  <!-- Result Modal Dialog -->
+  <!-- 10. Result Modal Dialog: Success or Error (النجاح أو الفشل) -->
   <div class="modal-overlay" id="result-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+    <div class="modal-card modal-success" id="result-card">
       <div class="modal-header">
-        <h3 id="result-modal-title">نتيجة التفعيل</h3>
+        <div class="modal-header-title">
+          <span class="modal-badge-icon success-icon" id="result-badge-icon">✓</span>
+          <h3 id="result-modal-title">نتيجة عملية التفعيل</h3>
+        </div>
         <button class="modal-close" data-action="closeResultModal" aria-label="إغلاق">✕</button>
       </div>
       <div class="modal-body">
-        <p id="result-modal-msg">تمت العملية بنجاح.</p>
+        <p class="modal-highlight-text" id="result-modal-msg">تمت عملية التفعيل وتجهيز المودات بنجاح. يمكنك الآن الاستمتاع باللعبة!</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary-action" style="padding:6px 16px;font-size:12px;" data-action="closeResultModal" data-i18n="btn.close">إغلاق</button>
+        <button class="btn-primary-action modal-btn-main" data-action="closeResultModal" data-i18n="btn.close">إغلاق ومتابعة</button>
       </div>
     </div>
   </div>

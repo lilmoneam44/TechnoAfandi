@@ -105,6 +105,17 @@ export const dictionary = {
   'tour.step4.desc': { ar: 'اضغط للمتابعة لبدء عملية التفعيل وتشغيل اللعبة فوراً.', en: 'Click to start activation and launch the game.' },
 
   // Progress & Events
+  // Modal Popups Collection
+  'modal.error.title': { ar: 'خطأ في مسار مجلد اللعبة', en: 'Game Folder Error' },
+  'modal.error.desc': { ar: 'لم يتم العثور على ملفات FC 27 الصالحة في المجلد المحدد. تأكد من اختيار المجلد الصحيح الذي يحتوي على ملف اللعبة التنفيذي.', en: 'Valid FC 27 game files were not found in the selected folder. Ensure you choose the correct installation folder.' },
+  'modal.update.title': { ar: 'تحديث جديد متوفر للأداة!', en: 'New Update Available!' },
+  'modal.update.desc': { ar: 'يتوفر إصدار جديد من أداة تكنو أفندي يتضمن تحسينات للأداء والتوافق مع آخر تحديثات اللعبة وموداتها.', en: 'A new version of Techno Afandi is available with enhanced performance and mod compatibility.' },
+  'modal.update.changelog': { ar: 'أبرز مميزات التحديث:', en: "What's new in this version:" },
+  'modal.path_success.title': { ar: 'تم التحقق من مجلد اللعبة بنجاح!', en: 'Game Folder Verified Successfully!' },
+  'modal.path_success.desc': { ar: 'تم العثور على ملفات اللعبة والملفات المساعدة بنجاح. يمكنك الآن المتابعة للتشغيل.', en: 'Game installation and components verified successfully. You are ready to launch.' },
+  'modal.path_confirm.title': { ar: 'تحديد مجلد تثبيت FC 27', en: 'Set FC 27 Installation Folder' },
+  'modal.path_confirm.desc': { ar: 'لم يتم العثور على اللعبة في المسارات الافتراضية. يرجى البحث التلقائي عبر الأقراص أو تحديد المجلد يدوياً.', en: 'Game not found in default paths. Please auto-scan drives or browse manually.' },,
+
   'progress.downloading': { ar: 'جاري التحميل: {file} ({percent}%) {speed}', en: 'Downloading: {file} ({percent}%) {speed}' },
   'progress.scanning': { ar: 'جاري فحص: {folder}', en: 'Scanning: {folder}' },
   'progress.extracting': { ar: 'جاري استخراج الملفات: {file}', en: 'Extracting: {file}' },

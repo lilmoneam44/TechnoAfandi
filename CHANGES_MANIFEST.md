@@ -63,3 +63,29 @@ This manifest records all modifications, enhancements, and asset additions for t
 - **`fc27_player.jpg`** (1376x768): Dynamic EA SPORTS FC style player action artwork. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.
 - **`stadium_hero.jpg`** (1376x768): Floodlit football stadium arena backdrop. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.
 - **`pitch_tactics.jpg`** (1376x768): High-contrast tactical pitch blueprint texture. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.
+
+## Restored & Retouched Popups Collection
+
+1. **Yellow Warning Popup (`#mode-warning-modal`)**:
+   - Amber gold theme (`#FFB800` / `#FFD700`) with glowing warning badge.
+   - Interactive quick-mode selector embedded directly within the dialog.
+
+2. **Red Error Popup (`#game-error-modal`)**:
+   - Electric crimson theme (`#FF3B30` / `#FF4D4D`) with error badge.
+   - Dynamic invalid path display (`#error-path-text`) and actionable resolution tips.
+
+3. **Welcome Startup Popup (`#startup-modal`)**:
+   - EA SPORTS FC pitch green theme (`#00FF87`) with official matchday perks.
+   - Quick onboarding tour trigger and immediate start action.
+
+4. **Update Popup (`#update-modal`)**:
+   - Cyan download theme (`#38EFFF`) with version comparison (`v1.2.20` -> `v1.2.24 PRO`), feature highlights, and integrated download progress bar.
+
+5. **Path Success Popup (`#path-success-modal`)**:
+   - Emerald pitch theme with verified path badge and one-click continue action.
+
+6. **Game Folder Selection & Scan Modals (`#path-confirm-modal` & `#game-scan-modal`)**:
+   - Blue/Cyan utility theme with live multi-drive scan progress tracking.
+
+7. **Result & Cancel Modals (`#result-modal` & `#cancel-modal`)**:
+   - Dynamic success/failure state adaptation with matching icons and cancellation safety guard.
