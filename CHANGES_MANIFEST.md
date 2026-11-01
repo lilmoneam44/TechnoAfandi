@@ -1,33 +1,65 @@
-# Techno Afandi FC27 Tool — Legendary UI Overhaul Manifest
+# CHANGES MANIFEST — TECHNO AFANDI FC27 ULTIMATE TRANSFORMATION
 
-## Deliverable Information
-- **Archive File:** `TechnoAfandi_FC27_Legendary_UI_Overhaul.zip`
-- **Application:** Techno Afandi FC27 Tool (EA SPORTS FC 27 & FC 26 Desktop Utility)
-- **Baseline Git Commit:** `ac6cc7c879c89c0c7b024775a46485ba06d48dbf` (HEAD of `main`)
-- **Target Version:** 1.2.20
-- **Technology Stack:** Tauri v2, Rust 2021, HTML5, CSS3, JavaScript ES Modules, Vite 7
+## Overview
+This manifest records all modifications, enhancements, and asset additions for the complete EA SPORTS FC 27 Matchday Transformation of the Techno Afandi launcher.
 
-## Complete Manifest of Delivered Files
+## Modified & Enhanced Files
 
-| File Path in Archive | Status | Purpose & Changes |
-| :--- | :--- | :--- |
-| `src/styles/main.css` | **Rebuilt** | Completely redesigned EA SPORTS FC-inspired football visual identity (pitch surfaces, electric lime accents, tactical pitch lines, clean hierarchy, no generic cyber glow). |
-| `src/styles/main_patch.css` | **Updated** | Restored `--cyan-1` tokens, `:focus-visible` accessibility rings, Path Status Bar, Quick Launch, and sticky action footers. |
-| `src/home_page_v2.html` | **Rebuilt** | Rebuilt matchday dashboard featuring custom drag titlebar, editorial hero section, interactive Path Status Bar, radio mode cards, Quick Launch action, and Diagnostics modal. |
-| `src/version_page_v2.html` | **Rebuilt** | Rebuilt activation interface with matchday header, progress card, start/pause/cancel actions, and reconciled DOM element IDs matching `version.js`. |
-| `src/scripts/home.js` | **Enhanced** | Integrated interactive Path Status Bar, Quick Launch activation, Diagnostics Center (`openDiagnostics`, `copyDiagnostics`), unique scan session cancellation guards, and rAF progress debouncing. |
-| `src/scripts/version.js` | **Reconciled** | Reconciled critical Tauri IPC contract (`{ exe_dir, selection }` instead of `{ gameDir, mode }`), Action Registry integration, and debounced progress animation. |
-| `src/scripts/ui.js` | **Hardened** | Zero-reflection `ACTION_REGISTRY`, modal focus trapping, focus restoration on dialog close, and Escape key dismissal. |
-| `src/scripts/store.js` | **Vite-Ready** | Uses persistent webview storage native to WebView2 on Windows, removing uninstalled `@tauri-apps/plugin-store` import that caused Rollup build failure. |
-| `src/scripts/tour.js` | **Hardened** | Pure index-based onboarding navigation independent of language strings, boundary clamping, safe DOM text nodes, and clean listener teardown. |
-| `src/scripts/i18n.js` | **Enhanced** | Structured progress event parser, dynamic token interpolation (`{file}`, `{percent}`, `{speed}`), RTL/LTR synchronization, and football/diagnostic dictionary keys. |
-| `src/scripts/modal_fit.js` | **Hardened** | Enforces `0.85` scale floor with internal vertical scroll fallback and sticky action buttons. |
-| `src-tauri/src/main.rs` | **Restored & Patched** | 983 lines. Complete original architecture preserved, private crate-root commands (eliminates E0255), lossless UTF-8 pathing, case-insensitive discovery, bounded diagnostics, and removed nonexistent `logger::init_logger`. |
-| `src-tauri/Cargo.toml` | **Updated** | Version bumped to `1.2.20`. |
-| `src-tauri/tauri.conf.json` | **Restored & Patched** | Version bumped to `1.2.20`, restored `"withGlobalTauri": true`, `"label": "main"`, valid `pubkey`, and removed `createUpdaterArtifacts` to prevent private key decoding failure during build. |
-| `package.json` | **Updated** | Version bumped to `1.2.20`. |
-| `CHANGES_MANIFEST.md` | **Documentation** | Complete package metadata, file descriptions, and integration instructions. |
+1. **`src/home_page_v2.html`**
+   - **Purpose**: Redesigned for exact 500x760 desktop frameless window geometry.
+   - **Fixes**:
+     - Embedded matchday hero card with real football player art (`fc27_player.jpg`).
+     - Added background tactical blueprint texture layer (`pitch_tactics.jpg`).
+     - Built Engine & System Status card (Frostbite™ engine, memory hook, activation guard) to completely eliminate the empty 350px void at the bottom.
+     - Hardcoded initial Arabic text for all elements so no raw translation keys ever appear.
+     - Fully bound Action Registry attributes for mode switching, folder detection, and diagnostics.
 
-## Verification Summary
-- **Test Suite:** `tests/comprehensive_test_suite.js` (10/10 automated tests passed).
-- **Directory Preservation:** Archive preserves exact relative repository layout. No `node_modules`, `target`, or temporary build caches included.
+2. **`src/version_page_v2.html`**
+   - **Purpose**: Enhanced activation view with floodlit stadium artwork (`stadium_hero.jpg`).
+   - **Fixes**:
+     - Visual progress bar with animated cyan-to-green gradient.
+     - Reconciled back button and cancel dialogs.
+     - Unified footer and community branding.
+
+3. **`src/styles/main.css`**
+   - **Purpose**: Master EA SPORTS FC dark theme styling system.
+   - **Fixes**:
+     - Color palette: `#00FF87` (Pitch Green), `#38EFFF` (Cyan), `#101317` (Surface).
+     - Responsive hero card layout with high-definition player background and gradient overlays.
+     - Mode selection cards with glowing neon indicators and custom radio badges.
+     - High-contrast accessible focus outlines (`:focus-visible`).
+     - Compact tactical system status metrics grid.
+
+4. **`src/styles/main_patch.css`**
+   - **Purpose**: Supplementary RTL layout helpers and chevron directional transforms.
+
+5. **`src/scripts/i18n.js`**
+   - **Purpose**: Complete localization dictionary and bulletproof DOM updater.
+   - **Fixes**:
+     - Added all 42 translation keys used in the application.
+     - Guarded `applyLanguage()` so that missing keys never overwrite element text with raw strings.
+     - Added support for progress event formatting and dynamic parameter replacement.
+
+6. **`src/scripts/version.js`**
+   - **Purpose**: Activation controller and Tauri IPC integration.
+   - **Fixes**:
+     - Corrected `start_activation` parameter mapping to pass `{ exeDir: gameDir, selection: selectedMode, exe_dir: gameDir, mode: selectedMode }`, matching Tauri Rust backend command signature.
+
+7. **`src-tauri/src/main.rs`**
+   - **Purpose**: Tauri backend engine.
+   - **Fixes**:
+     - Formatted `drive_paths` multi-line Steam path expression to strictly satisfy `cargo fmt --check`.
+     - Removed non-existent `logger::init_logger(app.handle())`.
+     - Ensured private visibility on crate-root Tauri command definitions (resolving E0255).
+     - Robust UTF-8 lossless filesystem path handling.
+
+8. **`src-tauri/tauri.conf.json`**
+   - **Purpose**: Tauri desktop packaging configuration.
+   - **Fixes**:
+     - Removed `"createUpdaterArtifacts": true` to allow local and CI release builds to succeed without requiring unsigned private key comments.
+
+## Visual Assets Installed
+
+- **`fc27_player.jpg`** (1376x768): Dynamic EA SPORTS FC style player action artwork. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.
+- **`stadium_hero.jpg`** (1376x768): Floodlit football stadium arena backdrop. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.
+- **`pitch_tactics.jpg`** (1376x768): High-contrast tactical pitch blueprint texture. Installed in `public/`, `src/public/`, `src/assets/hero/`, `src/assets/textures/`, and `src/`.

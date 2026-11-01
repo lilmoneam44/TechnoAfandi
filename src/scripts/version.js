@@ -90,7 +90,7 @@ async function handleStartActivation() {
     const gameDir = sessionStorage.getItem('ta_exe_dir') || '';
     const selectedMode = sessionStorage.getItem('ta_mode') || 'FMM';
 
-    await tauriInvoke('start_activation', { gameDir, mode: selectedMode });
+    await tauriInvoke('start_activation', { exeDir: gameDir, selection: selectedMode, exe_dir: gameDir, mode: selectedMode });
   } catch (err) {
     console.error('[Activation] Failed to start activation:', err);
     handleActivationFinish({ success: false, message: String(err) });

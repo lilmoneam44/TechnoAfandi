@@ -6,16 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/main_patch.css">
 </head>
 <body>
 
   <!-- Custom Desktop Titlebar -->
-  <header class="titlebar">
-    <div class="brand-badge">
-      <button class="btn-diag-link" type="button" data-action="goBack" style="font-size:14px;color:#FFF;" title="رجوع للرئيسية">
-        <i class="ti ti-arrow-right"></i>
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="brand-badge" data-tauri-drag-region>
+      <button class="global-lang-toggle" type="button" data-action="goBack" style="font-size:12px;color:#FFF;padding:2px 8px;margin-inline-end:4px;" title="رجوع للرئيسية">
+        <span>‹ رجوع</span>
       </button>
-      <span>TECHNO AFANDI</span>
+      <span class="brand-title">TECHNO AFANDI</span>
       <span class="fc-tag">ACTIVATION</span>
     </div>
     <div class="controls">
@@ -24,39 +25,74 @@
   </header>
 
   <main class="app-container">
-    <div class="pitch-lines-bg" aria-hidden="true"></div>
+    <div class="pitch-lines-bg" aria-hidden="true">
+      <img src="/pitch_tactics.jpg" alt="" class="pitch-bg-img" onerror="this.src='assets/textures/pitch_tactics.jpg'">
+    </div>
 
+    <!-- Matchday Activation Hero Card with Stadium Artwork -->
     <section class="hero-card">
+      <div class="hero-bg-layer" aria-hidden="true">
+        <img src="/stadium_hero.jpg" alt="FC 27 Stadium" class="hero-player-img" onerror="this.src='assets/hero/stadium_hero.jpg'">
+        <div class="hero-gradient-overlay"></div>
+      </div>
       <div class="hero-content">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          <span class="hero-badge-text">EA SPORTS FC™ 27</span>
+        </div>
         <h1 data-i18n="nav.version">التفعيل والتحضير للتشغيل</h1>
-        <p id="activation-status-text" data-i18n="app.status.ready">جاهز لبدء عملية التفعيل</p>
+        <p id="activation-status-text" data-i18n="app.status.ready">جاهز لبدء عملية التفعيل والتشغيل</p>
+      </div>
+      <div class="hero-status-pill">
+        <span class="indicator-dot"></span>
+        <span data-i18n="app.status.ready">جاهز للاستخدام</span>
       </div>
     </section>
 
     <!-- Progress Card -->
-    <section class="mode-card" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:16px;">
+    <section class="system-status-card" style="padding:16px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:12px;color:var(--text-muted);">نسبة الإنجاز:</span>
-        <span id="progress-percent" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ea-green);">0%</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text-muted);">نسبة الإنجاز:</span>
+        <span id="progress-percent" style="font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--ea-green);font-size:14px;">0%</span>
       </div>
-      <div style="height:8px;background:var(--pitch-surface-raised);border-radius:4px;overflow:hidden;border:1px solid var(--pitch-border);">
-        <div id="progress-bar-fill" style="width:0%;height:100%;background:var(--ea-green);transition:width 0.2s ease;"></div>
+      <div style="height:10px;background:var(--pitch-surface-raised);border-radius:5px;overflow:hidden;border:1px solid var(--pitch-border);margin-bottom:12px;">
+        <div id="progress-bar-fill" style="width:0%;height:100%;background:linear-gradient(90deg, var(--ea-green) 0%, var(--cyan-1) 100%);transition:width 0.2s ease;"></div>
+      </div>
+      <div id="progress-label" style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        اضغط على زر "بدء التفعيل" لبدء تجهيز ملفات المودات...
       </div>
     </section>
 
     <!-- Controls Row -->
     <section class="actions-row">
       <button class="btn-primary-action" id="btn-start-activation" data-action="startActivation">
-        <i class="ti ti-play"></i>
+        <span>▶</span>
         <span data-i18n="btn.launch">بدء التفعيل</span>
       </button>
       <button class="btn-quick-launch" id="btn-pause" data-action="togglePause" disabled>
         <span data-i18n="btn.pause">إيقاف مؤقت</span>
       </button>
-      <button class="global-lang-toggle" id="btn-cancel" data-action="cancelActivation" disabled style="padding:0 14px;">
+      <button class="global-lang-toggle" id="btn-cancel" data-action="cancelActivation" disabled style="padding:0 14px;border-radius:10px;">
         <span data-i18n="btn.cancel">إلغاء</span>
       </button>
     </section>
+
+    <!-- Matchday Community & Credit Footer -->
+    <footer class="utility-row">
+      <div class="community-links">
+        <a href="https://discord.gg/technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" class="community-badge" title="سيرفر الديسكورد الرسمي">
+          <span>💬 Discord</span>
+        </a>
+        <a href="https://youtube.com/@technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" class="community-badge" title="قناة اليوتيوب للشروحات">
+          <span>▶ YouTube</span>
+        </a>
+      </div>
+
+      <div class="credit-wrap">
+        <span class="credit-text">TECHNO AFANDI • FC 27 EDITION</span>
+        <span class="version-tag">v1.2.24 PRO</span>
+      </div>
+    </footer>
   </main>
 
   <!-- Cancel Confirmation Modal -->
@@ -66,7 +102,7 @@
         <h3 data-i18n="modal.cancel.confirm">تأكيد إلغاء العملية</h3>
       </div>
       <div class="modal-body">
-        <p>هل أنت متأكد من رغبتك في إيقاف عملية التفعيل وإلغاء التحميل الجاري؟</p>
+        <p>هل أنت متأكد من رغبتك في إيقاف عملية التفعيل وإلغاء الإجراء الجاري؟</p>
       </div>
       <div class="modal-footer">
         <button class="global-lang-toggle" data-action="closeModal" data-i18n="btn.resume">استمرار</button>
@@ -79,13 +115,14 @@
   <div class="modal-overlay" id="result-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="result-title">...</h3>
+        <h3 id="result-modal-title">نتيجة التفعيل</h3>
+        <button class="modal-close" data-action="closeResultModal" aria-label="إغلاق">✕</button>
       </div>
       <div class="modal-body">
-        <p id="result-message">...</p>
+        <p id="result-modal-msg">تمت العملية بنجاح.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary-action" style="padding:6px 14px;font-size:12px;" data-action="closeResultModal" data-i18n="btn.close">إغلاق</button>
+        <button class="btn-primary-action" style="padding:6px 16px;font-size:12px;" data-action="closeResultModal" data-i18n="btn.close">إغلاق</button>
       </div>
     </div>
   </div>

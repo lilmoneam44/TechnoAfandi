@@ -6,30 +6,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/main_patch.css">
   <link rel="stylesheet" href="styles/update_popup.css">
 </head>
 <body>
 
-  <!-- Custom Desktop Titlebar -->
-  <header class="titlebar">
-    <div class="brand-badge">
-      <span>TECHNO AFANDI</span>
-      <span class="fc-tag">FC 27</span>
+  <!-- Custom Frameless Titlebar -->
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="brand-badge" data-tauri-drag-region>
+      <div class="brand-logo-icon">
+        <span class="brand-cube"></span>
+      </div>
+      <span class="brand-title">TECHNO AFANDI</span>
+      <span class="fc-tag">FC 27 PRO</span>
     </div>
     <div class="controls">
-      <button class="global-lang-toggle" type="button" data-action="toggleLanguage" aria-label="Switch Language">EN / AR</button>
+      <button class="global-lang-toggle" type="button" data-action="toggleLanguage" aria-label="تبديل اللغة / Switch Language">EN / AR</button>
     </div>
   </header>
 
   <main class="app-container">
-    <div class="pitch-lines-bg" aria-hidden="true"></div>
+    <!-- Tactical Blueprint Pitch Texture Layer -->
+    <div class="pitch-lines-bg" aria-hidden="true">
+      <img src="/pitch_tactics.jpg" alt="" class="pitch-bg-img" onerror="this.src='assets/textures/pitch_tactics.jpg'">
+    </div>
 
-    <!-- Matchday Hero Card -->
+    <!-- Matchday Hero Card with Football Art -->
     <section class="hero-card">
+      <div class="hero-bg-layer" aria-hidden="true">
+        <img src="/fc27_player.jpg" alt="EA SPORTS FC 27" class="hero-player-img" onerror="this.src='assets/hero/fc27_player.jpg'">
+        <div class="hero-gradient-overlay"></div>
+      </div>
       <div class="hero-content">
-        <h1 data-i18n="home.hero.title">
-          <span>FC 27 MOD INTEGRATOR</span>
-        </h1>
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          <span class="hero-badge-text">EA SPORTS FC™ 27</span>
+        </div>
+        <h1 data-i18n="home.hero.title">FC 27 MOD INTEGRATOR</h1>
         <p data-i18n="home.hero.subtitle">التحكم الكامل في تشغيل وتفعيل مودات FC 27</p>
       </div>
       <div class="hero-status-pill">
@@ -38,87 +51,146 @@
       </div>
     </section>
 
-    <!-- Interactive Game Installation Status Bar -->
-    <section class="path-status-bar" id="path-status-bar" data-action="selectGameFolder" role="button" tabindex="0" title="اضغط لتغيير مجلد اللعبة">
+    <!-- Interactive Game Path Status Bar -->
+    <section class="path-status-bar" id="path-status-bar" data-action="selectGameFolder" role="button" tabindex="0" title="اضغط لتغيير أو فحص مجلد اللعبة">
       <div class="path-icon-wrap">
-        <i class="ti ti-folder-check" id="path-status-icon"></i>
+        <i class="ti ti-folder-check" id="path-status-icon">📁</i>
       </div>
       <div class="path-meta">
         <span class="path-label" data-i18n="home.path.title">مسار اللعبة المحدد:</span>
-        <span class="path-val" id="path-status-val" data-i18n="home.path.unselected">لم يتم تحديد المجلد (اضغط هنا للتحديد)</span>
+        <span class="path-val" id="path-status-val" data-i18n="home.path.unselected">لم يتم تحديد المجلد (انقر للتحديد أو الفحص)</span>
       </div>
-      <i class="ti ti-chevron-left" style="color:var(--text-dim);"></i>
+      <div class="path-chevron" aria-hidden="true">‹</div>
     </section>
 
-    <!-- Runtime Mode Cards (FMM & Live Editor) -->
-    <section class="modes-group" role="radiogroup" aria-label="اختر نمط التشغيل" data-i18n-aria="home.mode.label">
-      <!-- FMM Mode -->
-      <div class="mode-card" id="opt-fmm" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="FMM">
-        <div class="mode-icon"><i class="ti ti-tool"></i></div>
-        <div class="mode-details">
-          <div class="mode-title" data-i18n="home.mode.fmm.title">FMM – FIFA Mod Manager</div>
-          <div class="mode-desc" data-i18n="home.mode.fmm.desc">تشغيل الأطقم، والوجوه، والمودات المخصصة عبر Mod Manager.</div>
-        </div>
-        <div class="mode-radio-indicator"></div>
+    <!-- Launch Mode Selector -->
+    <section class="modes-section">
+      <div class="section-header">
+        <span class="section-title" data-i18n="home.mode.section">اختر نمط التشغيل</span>
       </div>
 
-      <!-- Live Editor Mode -->
-      <div class="mode-card" id="opt-live" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="Live Editor">
-        <div class="mode-icon"><i class="ti ti-bolt"></i></div>
-        <div class="mode-details">
-          <div class="mode-title" data-i18n="home.mode.live.title">Live Editor Mode</div>
-          <div class="mode-desc" data-i18n="home.mode.live.desc">تعديل خواص اللاعبين والذاكرة في الوقت الفعلي أثناء اللعب.</div>
+      <div class="modes-group" role="radiogroup" aria-label="اختر نمط التشغيل" data-i18n-aria="home.mode.label">
+        <!-- FMM Mode -->
+        <div class="mode-card" id="opt-fmm" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="FMM">
+          <div class="mode-icon-wrap">
+            <span class="mode-emoji-icon">🎮</span>
+          </div>
+          <div class="mode-details">
+            <div class="mode-title-row">
+              <span class="mode-title" data-i18n="home.mode.fmm.title">FMM – FIFA Mod Manager</span>
+              <span class="mode-badge" data-i18n="home.mode.fmm.badge">مودات مخصصة</span>
+            </div>
+            <div class="mode-desc" data-i18n="home.mode.fmm.desc">تشغيل الأطقم، والوجوه، والمودات المخصصة عبر Mod Manager.</div>
+          </div>
+          <div class="mode-radio-indicator">
+            <span class="radio-check">✓</span>
+          </div>
         </div>
-        <div class="mode-radio-indicator"></div>
+
+        <!-- Live Editor Mode -->
+        <div class="mode-card" id="opt-live" role="radio" aria-checked="false" tabindex="0" data-action="selectMode" data-mode="Live Editor">
+          <div class="mode-icon-wrap">
+            <span class="mode-emoji-icon">⚡</span>
+          </div>
+          <div class="mode-details">
+            <div class="mode-title-row">
+              <span class="mode-title" data-i18n="home.mode.live.title">Live Editor Mode</span>
+              <span class="mode-badge live-badge" data-i18n="home.mode.live.badge">تعديل مباشر</span>
+            </div>
+            <div class="mode-desc" data-i18n="home.mode.live.desc">تعديل خواص اللاعبين والذاكرة في الوقت الفعلي أثناء اللعب.</div>
+          </div>
+          <div class="mode-radio-indicator">
+            <span class="radio-check">✓</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Action Launch Bar -->
+    <!-- Primary Action Launch Bar -->
     <section class="actions-row">
       <button class="btn-primary-action" id="launch-btn" data-action="continueToVersion">
         <span data-i18n="btn.continue">متابعة إلى التفعيل والتشغيل</span>
-        <i class="ti ti-arrow-left"></i>
+        <span class="btn-arrow">←</span>
       </button>
 
       <!-- Instant One-Click Quick Launch -->
-      <button class="btn-quick-launch" id="btn-quick-launch" data-action="quickLaunch" style="display:none;" title="تشغيل مباشر بالإعدادات السابقة">
-        <i class="ti ti-player-play"></i>
+      <button class="btn-quick-launch" id="btn-quick-launch" data-action="quickLaunch" style="display:none;" title="تشغيل فوري بالإعدادات السابقة">
+        <span class="btn-play-icon">▶</span>
         <span data-i18n="btn.quick_launch">تشغيل فوري</span>
       </button>
     </section>
 
-    <!-- Utility & Community Footer -->
-    <footer class="utility-row">
-      <button class="btn-diag-link" type="button" data-action="openDiagnostics">
-        <i class="ti ti-activity"></i>
-        <span data-i18n="btn.diagnostics">تشخيص النظام والملفات</span>
-      </button>
+    <!-- Tactical System & Engine Integration Overview -->
+    <section class="system-status-card">
+      <div class="system-status-header">
+        <div class="system-status-title">
+          <span class="status-icon-dot"></span>
+          <span data-i18n="home.system.title">حالة النظام وتكامل المحرك</span>
+        </div>
+        <div class="system-status-actions">
+          <button class="btn-diag-badge" type="button" data-action="openDiagnostics" title="فحص ملفات اللعبة">
+            <span data-i18n="btn.diagnostics">تشخيص الملفات</span>
+          </button>
+          <button class="btn-diag-badge" type="button" data-action="autoLocateGame" title="البحث التلقائي عن المسار">
+            <span data-i18n="btn.auto_locate">فحص المسار</span>
+          </button>
+        </div>
+      </div>
 
+      <div class="system-metrics-grid">
+        <div class="metric-chip">
+          <span class="metric-name" data-i18n="home.system.frostbite">محرك Frostbite™</span>
+          <span class="metric-status status-active" data-i18n="home.system.active">● متصل ونشط</span>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-name" data-i18n="home.system.memory">حقن الذاكرة</span>
+          <span class="metric-status status-ready" data-i18n="home.system.ready">● جاهز للحقن</span>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-name" data-i18n="home.system.guard">حماية التفعيل</span>
+          <span class="metric-status status-safe" data-i18n="home.system.protected">● محمي وآمن</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Matchday Community & Credit Footer -->
+    <footer class="utility-row">
       <div class="community-links">
-        <a href="https://discord.gg/technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" title="Discord"><i class="ti ti-brand-discord"></i></a>
-        <a href="https://youtube.com/@technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" title="YouTube"><i class="ti ti-brand-youtube"></i></a>
+        <a href="https://discord.gg/technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" class="community-badge" title="سيرفر الديسكورد الرسمي">
+          <span class="community-icon">💬</span>
+          <span class="community-label">Discord</span>
+        </a>
+        <a href="https://youtube.com/@technoafandi" target="_blank" rel="noopener noreferrer" data-action="openExternal" class="community-badge" title="قناة اليوتيوب للشروحات">
+          <span class="community-icon">▶</span>
+          <span class="community-label">YouTube</span>
+        </a>
+      </div>
+
+      <div class="credit-wrap">
+        <span class="credit-text">TECHNO AFANDI • FC 27 EDITION</span>
+        <span class="version-tag">v1.2.24 PRO</span>
       </div>
     </footer>
   </main>
 
-  <!-- Diagnostics Modal Dialog -->
-  <div class="modal-overlay" id="diagnostics-modal" role="dialog" aria-modal="true" aria-labelledby="diag-title">
+  <!-- Diagnostics Modal -->
+  <div class="modal-overlay" id="diagnostics-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="diag-title" data-i18n="diag.title">تشخيص مجلد اللعبة والملفات</h3>
+        <h3 data-i18n="diag.title">فحص وتشخيص ملفات اللعبة</h3>
         <button class="modal-close" data-action="closeModal" aria-label="إغلاق">✕</button>
       </div>
-      <div class="modal-body">
-        <div style="margin-bottom:12px;">
-          <div style="color:var(--text-dim);font-size:10px;text-transform:uppercase;" data-i18n="diag.path">المسار:</div>
-          <div id="diag-path-val" style="font-family:'JetBrains Mono',monospace;color:#FFF;word-break:break-all;">...</div>
+      <div class="modal-body" style="font-size:12px;color:var(--text-muted);">
+        <div style="margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
+          <span style="font-weight:600;display:block;margin-bottom:2px;" data-i18n="diag.path">المسار المحدد:</span>
+          <span id="diag-path-val" style="font-family:'JetBrains Mono',monospace;color:#FFF;word-break:break-all;">...</span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span>ملف dbdata.dll:</span>
+          <span data-i18n="diag.dbdata">ملف dbdata.dll:</span>
           <span id="diag-dbdata-val" style="font-weight:700;">...</span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:8px;background:var(--pitch-surface);border-radius:6px;">
-          <span>بيانات التثبيت (XML):</span>
+          <span data-i18n="diag.xml">بيانات التثبيت (XML):</span>
           <span id="diag-xml-val" style="font-weight:700;">...</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px;background:var(--pitch-surface);border-radius:6px;">
