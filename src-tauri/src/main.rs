@@ -626,7 +626,10 @@ fn check_common_paths() -> Option<String> {
         let drive_paths = [
             format!(r"{}Program Files\EA Games\EA SPORTS FC 27", drive),
             format!(r"{}Program Files (x86)\Origin Games\EA SPORTS FC 27", drive),
-            format!(r"{}Program Files (x86)\Steam\steamapps\common\EA SPORTS FC 27", drive),
+            format!(
+                r"{}Program Files (x86)\Steam\steamapps\common\EA SPORTS FC 27",
+                drive
+            ),
             format!(r"{}Program Files\Epic Games\EA SPORTS FC 27", drive),
             format!(r"{}EA Games\EA SPORTS FC 27", drive),
             format!(r"{}Games\EA SPORTS FC 27", drive),
