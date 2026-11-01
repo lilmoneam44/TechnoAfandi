@@ -114,7 +114,7 @@ export const dictionary = {
   'modal.path_success.title': { ar: 'تم التحقق من مجلد اللعبة بنجاح!', en: 'Game Folder Verified Successfully!' },
   'modal.path_success.desc': { ar: 'تم العثور على ملفات اللعبة والملفات المساعدة بنجاح. يمكنك الآن المتابعة للتشغيل.', en: 'Game installation and components verified successfully. You are ready to launch.' },
   'modal.path_confirm.title': { ar: 'تحديد مجلد تثبيت FC 27', en: 'Set FC 27 Installation Folder' },
-  'modal.path_confirm.desc': { ar: 'لم يتم العثور على اللعبة في المسارات الافتراضية. يرجى البحث التلقائي عبر الأقراص أو تحديد المجلد يدوياً.', en: 'Game not found in default paths. Please auto-scan drives or browse manually.' },,
+  'modal.path_confirm.desc': { ar: 'لم يتم العثور على اللعبة في المسارات الافتراضية. يرجى البحث التلقائي عبر الأقراص أو تحديد المجلد يدوياً.', en: 'Game not found in default paths. Please auto-scan drives or browse manually.' },
 
   'progress.downloading': { ar: 'جاري التحميل: {file} ({percent}%) {speed}', en: 'Downloading: {file} ({percent}%) {speed}' },
   'progress.scanning': { ar: 'جاري فحص: {folder}', en: 'Scanning: {folder}' },
